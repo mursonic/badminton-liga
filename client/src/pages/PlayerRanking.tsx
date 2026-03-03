@@ -62,7 +62,7 @@ export default function PlayerRanking() {
           <>
             {/* Top 3 Podium */}
             {(ranking?.length ?? 0) >= 3 && (
-              <div className="grid grid-cols-3 gap-3 mb-2">
+              <div className="flex items-end gap-3 mb-2">
                 {/* Podium-Reihenfolge: Silber (links), Gold (Mitte), Bronze (rechts) */}
                 {[1, 0, 2].map((rankIdx) => {
                   const row = ranking![rankIdx];
@@ -71,22 +71,25 @@ export default function PlayerRanking() {
                   // rankIdx ist der Array-Index: 0=Platz1(Gold), 1=Platz2(Silber), 2=Platz3(Bronze)
                   // podiumRank = der tatsächliche Rang des Spielers
                   const podiumRank = rankIdx + 1; // 0→1(Gold), 1→2(Silber), 2→3(Bronze)
-                  const heights = { 1: "pt-8", 2: "pt-4", 3: "pt-12" };
-                  const colors = {
+                  // Treppchen: Gold am höchsten (kein margin-top), Silber etwas tiefer, Bronze am tiefsten
+                  const topOffset: Record<number, string> = { 1: "mt-0", 2: "mt-8", 3: "mt-16" };
+                  const colors: Record<number, string> = {
                     1: "border-yellow-400/60 bg-yellow-400/8",    // Gold
                     2: "border-slate-300/60 bg-slate-300/8",      // Silber
                     3: "border-amber-700/60 bg-amber-700/8",      // Bronze
                   };
                   return (
-                    <Card key={row.playerId} className={`border ${colors[podiumRank as keyof typeof colors]} ${heights[podiumRank as keyof typeof heights]} text-center`}>
-                      <CardContent className="pt-4 pb-4">
-                        <RankMedal rank={podiumRank} />
-                        <p className="font-semibold text-foreground mt-2 truncate">{player?.name ?? `#${row.playerId}`}</p>
-                        <p className="text-2xl font-bold text-primary mt-1">{row.points}</p>
-                        <p className="text-xs text-muted-foreground">Punkte</p>
-                        <p className="text-xs text-muted-foreground mt-1">{row.wins}S / {row.losses}N</p>
-                      </CardContent>
-                    </Card>
+                    <div key={row.playerId} className={`flex-1 ${topOffset[podiumRank]}`}>
+                      <Card className={`border ${colors[podiumRank]} text-center h-full`}>
+                        <CardContent className="pt-6 pb-4">
+                          <RankMedal rank={podiumRank} />
+                          <p className="font-semibold text-foreground mt-2 truncate">{player?.name ?? `#${row.playerId}`}</p>
+                          <p className="text-2xl font-bold text-primary mt-1">{row.points}</p>
+                          <p className="text-xs text-muted-foreground">Punkte</p>
+                          <p className="text-xs text-muted-foreground mt-1">{row.wins}S / {row.losses}N</p>
+                        </CardContent>
+                      </Card>
+                    </div>
                   );
                 })}
               </div>

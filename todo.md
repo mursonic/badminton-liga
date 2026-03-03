@@ -72,3 +72,4 @@
 - [x] Tests anpassen und grün (8/8)
 - [x] match_sets SQL-Fehler: setNumber-Spaltenname war falsch (set_number statt setNumber)
 - [x] Spiele eintragen schlägt fehl (matches.create Fehler) - behoben: Admin-User fehlte, DB-Spalten nullable gemacht, insertId-Mapping korrigiert
+- [x] Podium-Treppchen: Gold (Mitte) höchste Karte, Silber zweithöchst, Bronze am niedrigsten
