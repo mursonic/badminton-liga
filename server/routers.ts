@@ -23,6 +23,8 @@ import {
   getPlayerRanking,
   setActiveSeason,
   updatePlayer,
+  updateSeason,
+  deleteSeason,
 } from "./db";
 
 // Admin guard middleware
@@ -98,6 +100,26 @@ export const appRouter = router({
     setActive: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(({ input }) => setActiveSeason(input.id)),
+
+    update: adminProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          name: z.string().min(1).max(64).optional(),
+          year: z.number().min(2000).max(2100).optional(),
+        })
+      )
+      .mutation(({ input }) => {
+        const { id, ...data } = input;
+        return updateSeason(id, data);
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteSeason(input.id);
+        return { success: true };
+      }),
   }),
 
   // ─── Matches ───────────────────────────────────────────────────────────────

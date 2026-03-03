@@ -35,3 +35,4 @@
 ## Bugfixes
 - [x] seasons.active Query gibt undefined zurück (muss null sein) → React Query Fehler auf /matches/new
 - [x] App-Namen auf "ATSV Badminton Liga" ändern (alle UI-Texte, Titel, Konfiguration)
+- [x] Saisons bearbeiten: Name ändern und Saison löschen

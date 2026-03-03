@@ -125,6 +125,23 @@ export async function setActiveSeason(id: number) {
   await db.update(seasons).set({ isActive: true }).where(eq(seasons.id, id));
 }
 
+export async function updateSeason(id: number, data: { name?: string; year?: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(seasons).set(data).where(eq(seasons.id, id));
+}
+
+export async function deleteSeason(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Check if season has matches
+  const matchCount = await db.select().from(matches).where(eq(matches.seasonId, id));
+  if (matchCount.length > 0) {
+    throw new Error(`Diese Saison enthält ${matchCount.length} Spiel(e) und kann nicht gelöscht werden.`);
+  }
+  await db.delete(seasons).where(eq(seasons.id, id));
+}
+
 // ─── Matches ─────────────────────────────────────────────────────────────────
 
 export async function getMatchesBySeasonId(seasonId: number) {
