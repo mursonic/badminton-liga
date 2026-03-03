@@ -9,16 +9,16 @@ Eine moderne Web-App zur Verwaltung einer Badminton-Vereinsliga. Spielergebnisse
 ## Screenshots
 
 ### Dashboard (öffentliche Ansicht)
-![Dashboard](https://d2xsxph8kpxj0f.cloudfront.net/310519663195374720/h7akdMQBXfjVMZA72Nx9AF/screenshot_dashboard_7d4f2a1c.png)
+![Dashboard](docs/screenshot_dashboard.png)
 
 ### Einzelrangliste mit Podium
-![Einzelrangliste](https://d2xsxph8kpxj0f.cloudfront.net/310519663195374720/h7akdMQBXfjVMZA72Nx9AF/screenshot_ranking_9b6b4e99.png)
+![Einzelrangliste](docs/screenshot_ranking.png)
 
 ### Admin-Ansicht: Spiel erfassen
-![Spiel erfassen](https://d2xsxph8kpxj0f.cloudfront.net/310519663195374720/h7akdMQBXfjVMZA72Nx9AF/screenshot_new_match_52b4f487.png)
+![Spiel erfassen](docs/screenshot_new_match.png)
 
 ### Admin-Dashboard (eingeloggt)
-![Admin-Ansicht](https://d2xsxph8kpxj0f.cloudfront.net/310519663195374720/h7akdMQBXfjVMZA72Nx9AF/screenshot_admin_c4e50c2c.png)
+![Admin-Ansicht](docs/screenshot_admin.png)
 
 ---
 
