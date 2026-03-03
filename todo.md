@@ -74,3 +74,4 @@
 - [x] Spiele eintragen schlägt fehl (matches.create Fehler) - behoben: Admin-User fehlte, DB-Spalten nullable gemacht, insertId-Mapping korrigiert
 - [x] Podium-Treppchen: Gold (Mitte) höchste Karte, Silber zweithöchst, Bronze am niedrigsten
 - [x] Footer einbauen: "Vibecoded in Hamburg with <3. Tool: Manus. GitHub." mit Ref-Link und GitHub-Repo
+- [x] GitHub README.md erstellen: Feature-Beschreibung, Screenshots, Installationsanleitung, Manus-Ref-Link
