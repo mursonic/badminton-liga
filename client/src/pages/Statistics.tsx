@@ -16,9 +16,9 @@ export default function Statistics() {
   const top5Pairs = allPairRanking?.slice(0, 5) ?? [];
 
   const totalMatches = allMatches?.length ?? 0;
-  const singlesCount = allMatches?.filter(m => m.matchType === "singles").length ?? 0;
-  const doublesCount = allMatches?.filter(m => m.matchType === "doubles").length ?? 0;
-  const mixedCount = allMatches?.filter(m => m.matchType === "mixed").length ?? 0;
+  const singlesCount = allMatches?.filter(m => m.type === "singles").length ?? 0;
+  const doublesCount = allMatches?.filter(m => m.type === "doubles").length ?? 0;
+  const mixedCount = allMatches?.filter(m => m.type === "mixed").length ?? 0;
 
   // Most active player (most games played)
   const mostActive = overallStats?.slice().sort((a, b) => b.gamesPlayed - a.gamesPlayed)[0];

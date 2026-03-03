@@ -60,7 +60,7 @@ export default function Matches() {
   const playerMap = new Map((players ?? []).map(p => [p.id, p]));
 
   const filteredMatches = (allMatches ?? []).filter(m =>
-    matchTypeFilter === "all" || m.matchType === matchTypeFilter
+    matchTypeFilter === "all" || m.type === matchTypeFilter
   );
 
   const getTeamLabel = (p1Id: number, p2Id: number | null | undefined) => {
@@ -142,30 +142,29 @@ export default function Matches() {
             <CardContent>
               <div className="divide-y divide-border/20">
                 {filteredMatches.map(m => {
-                  const team1 = getTeamLabel(m.team1Player1Id, m.team1Player2Id);
-                  const team2 = getTeamLabel(m.team2Player1Id, m.team2Player2Id);
+                  const team1 = getTeamLabel(m.player1Id, m.player2Id);
+                  const team2 = getTeamLabel(m.player3Id, m.player4Id);
+                  const team1Won = m.winningSide === 1;
+                  const team2Won = m.winningSide === 2;
                   return (
                     <div key={m.id} className="py-3 flex items-center gap-3 hover:bg-muted/5 rounded-lg px-2 transition-colors">
-                      <Badge variant="outline" className={`text-xs shrink-0 ${matchTypeBadge[m.matchType]}`}>
-                        {matchTypeLabel[m.matchType]}
+                      <Badge variant="outline" className={`text-xs shrink-0 ${matchTypeBadge[m.type]}`}>
+                        {matchTypeLabel[m.type]}
                       </Badge>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`font-medium text-sm truncate max-w-[200px] ${m.winner === "team1" ? "text-primary" : "text-foreground/70"}`}>
-                            {m.winner === "team1" && <Trophy className="inline h-3 w-3 mr-1 text-primary" />}
+                          <span className={`font-medium text-sm truncate max-w-[200px] ${team1Won ? "text-primary" : "text-foreground/70"}`}>
+                            {team1Won && <Trophy className="inline h-3 w-3 mr-1 text-primary" />}
                             {team1}
                           </span>
-                          <span className="text-muted-foreground text-sm shrink-0 font-bold">
-                            {m.team1Sets} : {m.team2Sets}
-                          </span>
-                          <span className={`font-medium text-sm truncate max-w-[200px] ${m.winner === "team2" ? "text-primary" : "text-foreground/70"}`}>
-                            {m.winner === "team2" && <Trophy className="inline h-3 w-3 mr-1 text-primary" />}
+                          <span className="text-muted-foreground text-sm shrink-0 font-bold">vs</span>
+                          <span className={`font-medium text-sm truncate max-w-[200px] ${team2Won ? "text-primary" : "text-foreground/70"}`}>
+                            {team2Won && <Trophy className="inline h-3 w-3 mr-1 text-primary" />}
                             {team2}
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {formatDate(m.playedAt)} · {m.team1TotalPoints}:{m.team2TotalPoints} Punkte gesamt
-                          {m.notes && ` · ${m.notes}`}
+                          {formatDate(m.playedAt)}
                         </p>
                       </div>
                       <Button

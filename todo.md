@@ -36,3 +36,13 @@
 - [x] seasons.active Query gibt undefined zurück (muss null sein) → React Query Fehler auf /matches/new
 - [x] App-Namen auf "ATSV Badminton Liga" ändern (alle UI-Texte, Titel, Konfiguration)
 - [x] Saisons bearbeiten: Name ändern und Saison löschen
+
+## SQLite-Umbau (Standalone-Version)
+- [x] SQLite-Abhängigkeiten installieren (@libsql/client)
+- [x] Drizzle-Schema auf SQLite umstellen
+- [x] Eigenes Passwort-Login implementieren (bcrypt + JWT, kein Manus OAuth)
+- [x] DB-Helpers auf SQLite anpassen
+- [x] Router: Auth-Prozeduren ersetzen
+- [x] Frontend: Login-Seite bauen
+- [x] Frontend: Auth-Hook anpassen
+- [x] Installationsanleitung (README) erstellen

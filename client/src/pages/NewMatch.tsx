@@ -12,17 +12,16 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
-import { Minus, Plus, PlusCircle, Swords, Trash2 } from "lucide-react";
+import { Minus, Plus, Swords } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
 type MatchType = "singles" | "doubles" | "mixed";
-type Winner = "team1" | "team2";
 
 interface SetScore {
-  team1Score: number;
-  team2Score: number;
+  scoreTeam1: number;
+  scoreTeam2: number;
 }
 
 export default function NewMatch() {
@@ -49,13 +48,12 @@ export default function NewMatch() {
   const [team1P2, setTeam1P2] = useState("");
   const [team2P1, setTeam2P1] = useState("");
   const [team2P2, setTeam2P2] = useState("");
-  const [winner, setWinner] = useState<Winner>("team1");
-  const [sets, setSets] = useState<SetScore[]>([{ team1Score: 0, team2Score: 0 }]);
-  const [notes, setNotes] = useState("");
+  const [winningSide, setWinningSide] = useState<1 | 2>(1);
+  const [sets, setSets] = useState<SetScore[]>([{ scoreTeam1: 0, scoreTeam2: 0 }]);
 
   const isDoubles = matchType !== "singles";
 
-  const addSet = () => setSets(prev => [...prev, { team1Score: 0, team2Score: 0 }]);
+  const addSet = () => setSets(prev => [...prev, { scoreTeam1: 0, scoreTeam2: 0 }]);
   const removeSet = (i: number) => setSets(prev => prev.filter((_, idx) => idx !== i));
   const updateSet = (i: number, field: keyof SetScore, value: number) => {
     setSets(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: Math.max(0, value) } : s));
@@ -70,8 +68,8 @@ export default function NewMatch() {
     ? `${getPlayerName(team2P1) || "Spieler 3"} & ${getPlayerName(team2P2) || "Spieler 4"}`
     : (getPlayerName(team2P1) || "Team 2");
 
-  const team1Sets = sets.filter(s => s.team1Score > s.team2Score).length;
-  const team2Sets = sets.filter(s => s.team2Score > s.team1Score).length;
+  const team1Sets = sets.filter(s => s.scoreTeam1 > s.scoreTeam2).length;
+  const team2Sets = sets.filter(s => s.scoreTeam2 > s.scoreTeam1).length;
 
   const handleSubmit = () => {
     if (!activeSeason) { toast.error("Keine aktive Saison. Bitte zuerst eine Saison anlegen."); return; }
@@ -79,19 +77,17 @@ export default function NewMatch() {
     if (isDoubles && (!team1P2 || !team2P2)) { toast.error("Beim Doppel/Mixed müssen alle vier Spieler ausgewählt werden."); return; }
     if (sets.length === 0) { toast.error("Mindestens ein Satz muss erfasst werden."); return; }
 
-    // Check for duplicate players
     const selectedIds = [team1P1, isDoubles ? team1P2 : null, team2P1, isDoubles ? team2P2 : null].filter(Boolean);
     if (new Set(selectedIds).size !== selectedIds.length) { toast.error("Derselbe Spieler kann nicht zweimal ausgewählt werden."); return; }
 
     createMutation.mutate({
       seasonId: activeSeason.id,
-      matchType,
-      team1Player1Id: parseInt(team1P1),
-      team1Player2Id: isDoubles && team1P2 ? parseInt(team1P2) : null,
-      team2Player1Id: parseInt(team2P1),
-      team2Player2Id: isDoubles && team2P2 ? parseInt(team2P2) : null,
-      winner,
-      notes: notes.trim() || null,
+      type: matchType,
+      player1Id: parseInt(team1P1),
+      player2Id: isDoubles && team1P2 ? parseInt(team1P2) : null,
+      player3Id: parseInt(team2P1),
+      player4Id: isDoubles && team2P2 ? parseInt(team2P2) : null,
+      winningSide,
       sets,
     });
   };
@@ -153,13 +149,13 @@ export default function NewMatch() {
 
         {/* Teams */}
         <div className="grid md:grid-cols-2 gap-4">
-          <Card className={`bg-card border-2 transition-colors ${winner === "team1" ? "border-primary/50" : "border-border/50"}`}>
+          <Card className={`bg-card border-2 transition-colors ${winningSide === 1 ? "border-primary/50" : "border-border/50"}`}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold">Team 1</CardTitle>
                 <button
-                  onClick={() => setWinner("team1")}
-                  className={`text-xs px-3 py-1 rounded-full border transition-all ${winner === "team1" ? "bg-primary text-primary-foreground border-primary" : "border-border/50 text-muted-foreground hover:border-primary/50"}`}
+                  onClick={() => setWinningSide(1)}
+                  className={`text-xs px-3 py-1 rounded-full border transition-all ${winningSide === 1 ? "bg-primary text-primary-foreground border-primary" : "border-border/50 text-muted-foreground hover:border-primary/50"}`}
                 >
                   Gewinner
                 </button>
@@ -171,13 +167,13 @@ export default function NewMatch() {
             </CardContent>
           </Card>
 
-          <Card className={`bg-card border-2 transition-colors ${winner === "team2" ? "border-primary/50" : "border-border/50"}`}>
+          <Card className={`bg-card border-2 transition-colors ${winningSide === 2 ? "border-primary/50" : "border-border/50"}`}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold">Team 2</CardTitle>
                 <button
-                  onClick={() => setWinner("team2")}
-                  className={`text-xs px-3 py-1 rounded-full border transition-all ${winner === "team2" ? "bg-primary text-primary-foreground border-primary" : "border-border/50 text-muted-foreground hover:border-primary/50"}`}
+                  onClick={() => setWinningSide(2)}
+                  className={`text-xs px-3 py-1 rounded-full border transition-all ${winningSide === 2 ? "bg-primary text-primary-foreground border-primary" : "border-border/50 text-muted-foreground hover:border-primary/50"}`}
                 >
                   Gewinner
                 </button>
@@ -203,7 +199,6 @@ export default function NewMatch() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Header */}
             <div className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center text-xs text-muted-foreground px-1">
               <span className="truncate">{team1Label}</span>
               <span className="w-8 text-center"></span>
@@ -214,74 +209,62 @@ export default function NewMatch() {
             {sets.map((s, i) => (
               <div key={i} className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
                 <div className="flex items-center gap-1">
-                  <button onClick={() => updateSet(i, "team1Score", s.team1Score - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  <button onClick={() => updateSet(i, "scoreTeam1", s.scoreTeam1 - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                     <Minus className="h-3 w-3" />
                   </button>
                   <Input
                     type="number"
-                    value={s.team1Score}
-                    onChange={e => updateSet(i, "team1Score", parseInt(e.target.value) || 0)}
+                    value={s.scoreTeam1}
+                    onChange={e => updateSet(i, "scoreTeam1", parseInt(e.target.value) || 0)}
                     className="h-9 text-center bg-input border-border/50 font-semibold text-lg"
                     min={0}
                   />
-                  <button onClick={() => updateSet(i, "team1Score", s.team1Score + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  <button onClick={() => updateSet(i, "scoreTeam1", s.scoreTeam1 + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
                 <span className="text-muted-foreground font-bold text-center w-8">:</span>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => updateSet(i, "team2Score", s.team2Score - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  <button onClick={() => updateSet(i, "scoreTeam2", s.scoreTeam2 - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                     <Minus className="h-3 w-3" />
                   </button>
                   <Input
                     type="number"
-                    value={s.team2Score}
-                    onChange={e => updateSet(i, "team2Score", parseInt(e.target.value) || 0)}
+                    value={s.scoreTeam2}
+                    onChange={e => updateSet(i, "scoreTeam2", parseInt(e.target.value) || 0)}
                     className="h-9 text-center bg-input border-border/50 font-semibold text-lg"
                     min={0}
                   />
-                  <button onClick={() => updateSet(i, "team2Score", s.team2Score + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  <button onClick={() => updateSet(i, "scoreTeam2", s.scoreTeam2 + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
                 <button
                   onClick={() => removeSet(i)}
                   disabled={sets.length === 1}
-                  className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive disabled:opacity-30 transition-colors"
+                  className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  ✕
                 </button>
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={addSet} className="w-full border-dashed border-border/50 text-muted-foreground hover:text-foreground gap-2">
-              <PlusCircle className="h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={addSet} className="w-full gap-2 border-dashed border-border/50 text-muted-foreground hover:text-foreground">
+              <Plus className="h-3.5 w-3.5" />
               Satz hinzufügen
             </Button>
           </CardContent>
         </Card>
 
-        {/* Notes */}
-        <Card className="bg-card border-border/50">
-          <CardContent className="pt-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="notes" className="text-sm">Notizen (optional)</Label>
-              <Input
-                id="notes"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="z.B. Besondere Umstände, Kommentare…"
-                className="bg-input border-border/50"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Submit */}
-        <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={() => setLocation("/matches")} className="border-border/50">
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => setLocation("/matches")} className="flex-1">
             Abbrechen
           </Button>
-          <Button onClick={handleSubmit} disabled={createMutation.isPending || !activeSeason} className="gap-2 min-w-32">
+          <Button
+            onClick={handleSubmit}
+            disabled={createMutation.isPending || !activeSeason}
+            className="flex-1 gap-2"
+          >
             <Swords className="h-4 w-4" />
             {createMutation.isPending ? "Speichern…" : "Spiel speichern"}
           </Button>

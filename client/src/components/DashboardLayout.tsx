@@ -240,12 +240,12 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
                 <button className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/10 transition-colors w-full text-left focus:outline-none">
                   <Avatar className="h-8 w-8 border border-border/50 shrink-0">
                     <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
-                      {user?.name?.charAt(0).toUpperCase() ?? "?"}
+                      {user?.username?.charAt(0).toUpperCase() ?? "?"}
                     </AvatarFallback>
                   </Avatar>
                   {!isCollapsed && (
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate leading-none text-foreground">{user?.name || "–"}</p>
+                      <p className="text-sm font-medium truncate leading-none text-foreground">{user?.username || "–"}</p>
                       <p className="text-xs text-muted-foreground truncate mt-1">{user?.role === "admin" ? "Administrator" : "Mitglied"}</p>
                     </div>
                   )}

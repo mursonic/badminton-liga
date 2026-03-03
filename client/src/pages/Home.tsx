@@ -126,21 +126,20 @@ export default function Home() {
                 <p className="text-muted-foreground text-sm text-center py-4">Noch keine Spiele erfasst.</p>
               ) : (
                 recentMatches.map(m => {
-                  const p1 = playerMap.get(m.team1Player1Id);
-                  const p2 = playerMap.get(m.team2Player1Id);
-                  const p1p2 = m.team1Player2Id ? playerMap.get(m.team1Player2Id) : null;
-                  const p2p2 = m.team2Player2Id ? playerMap.get(m.team2Player2Id) : null;
+                  const p1 = playerMap.get(m.player1Id);
+                  const p2 = playerMap.get(m.player3Id);
+                  const p1p2 = m.player2Id ? playerMap.get(m.player2Id) : null;
+                  const p2p2 = m.player4Id ? playerMap.get(m.player4Id) : null;
                   const team1 = p1p2 ? `${p1?.name ?? "?"} & ${p1p2?.name ?? "?"}` : (p1?.name ?? "?");
                   const team2 = p2p2 ? `${p2?.name ?? "?"} & ${p2p2?.name ?? "?"}` : (p2?.name ?? "?");
                   return (
                     <div key={m.id} className="flex items-center gap-2 text-sm">
                       <Badge variant="outline" className="text-xs shrink-0 border-border/50">
-                        {matchTypeLabel[m.matchType]}
+                        {matchTypeLabel[m.type]}
                       </Badge>
-                      <span className={`truncate ${m.winner === "team1" ? "text-primary font-medium" : "text-muted-foreground"}`}>{team1}</span>
+                      <span className={`truncate ${m.winningSide === 1 ? "text-primary font-medium" : "text-muted-foreground"}`}>{team1}</span>
                       <span className="text-muted-foreground shrink-0">vs</span>
-                      <span className={`truncate ${m.winner === "team2" ? "text-primary font-medium" : "text-muted-foreground"}`}>{team2}</span>
-                      <span className="text-muted-foreground text-xs shrink-0 ml-auto">{m.team1Sets}:{m.team2Sets}</span>
+                      <span className={`truncate ${m.winningSide === 2 ? "text-primary font-medium" : "text-muted-foreground"}`}>{team2}</span>
                     </div>
                   );
                 })

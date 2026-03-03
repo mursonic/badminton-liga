@@ -1,5 +1,4 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,42 +10,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { trpc } from "@/lib/trpc";
 import { Pencil, PlusCircle, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-type Gender = "male" | "female" | "other";
-
 interface PlayerData {
   id: number;
   name: string;
-  nickname: string | null;
-  gender: "male" | "female" | "other";
   active: boolean;
   createdAt: Date;
-  updatedAt: Date;
 }
-
-const genderLabel: Record<Gender, string> = {
-  male: "Männlich",
-  female: "Weiblich",
-  other: "Divers",
-};
-
-const genderBadge: Record<Gender, string> = {
-  male: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  female: "bg-pink-500/10 text-pink-400 border-pink-500/20",
-  other: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-};
 
 export default function Players() {
   const utils = trpc.useUtils();
@@ -86,28 +61,15 @@ export default function Players() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<PlayerData | null>(null);
   const [name, setName] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [gender, setGender] = useState<Gender>("other");
   const [active, setActive] = useState(true);
 
-  const resetForm = () => {
-    setName("");
-    setNickname("");
-    setGender("other");
-    setActive(true);
-  };
+  const resetForm = () => { setName(""); setActive(true); };
 
-  const openCreate = () => {
-    resetForm();
-    setEditing(null);
-    setDialogOpen(true);
-  };
+  const openCreate = () => { resetForm(); setEditing(null); setDialogOpen(true); };
 
   const openEdit = (p: PlayerData) => {
     setEditing(p);
     setName(p.name);
-    setNickname(p.nickname ?? "");
-    setGender(p.gender as Gender);
     setActive(p.active);
     setDialogOpen(true);
   };
@@ -115,20 +77,9 @@ export default function Players() {
   const handleSubmit = () => {
     if (!name.trim()) { toast.error("Name ist erforderlich."); return; }
     if (editing) {
-      updateMutation.mutate({
-        id: editing.id,
-        name: name.trim(),
-        nickname: nickname.trim() || null,
-        gender,
-        active,
-      });
+      updateMutation.mutate({ id: editing.id, name: name.trim(), active });
     } else {
-      createMutation.mutate({
-        name: name.trim(),
-        nickname: nickname.trim() || undefined,
-        gender,
-        active,
-      });
+      createMutation.mutate({ name: name.trim(), active });
     }
   };
 
@@ -225,30 +176,8 @@ export default function Players() {
                 onChange={e => setName(e.target.value)}
                 placeholder="Vollständiger Name"
                 className="bg-input border-border/50"
+                onKeyDown={e => e.key === "Enter" && handleSubmit()}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="nickname">Spitzname</Label>
-              <Input
-                id="nickname"
-                value={nickname}
-                onChange={e => setNickname(e.target.value)}
-                placeholder="Optional"
-                className="bg-input border-border/50"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Geschlecht</Label>
-              <Select value={gender} onValueChange={v => setGender(v as Gender)}>
-                <SelectTrigger className="bg-input border-border/50">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Männlich</SelectItem>
-                  <SelectItem value="female">Weiblich</SelectItem>
-                  <SelectItem value="other">Divers</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div className="flex items-center gap-3">
               <Switch id="active" checked={active} onCheckedChange={setActive} />
@@ -286,11 +215,7 @@ function PlayerRow({
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-medium text-foreground">{player.name}</p>
-        {player.nickname && <p className="text-xs text-muted-foreground">"{player.nickname}"</p>}
       </div>
-      <Badge variant="outline" className={`text-xs ${genderBadge[player.gender as Gender] ?? ""}`}>
-        {genderLabel[player.gender as Gender] ?? player.gender}
-      </Badge>
       <div className="flex gap-1">
         <Button
           variant="ghost"

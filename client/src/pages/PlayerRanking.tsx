@@ -119,7 +119,7 @@ export default function PlayerRanking() {
                           <p className={`font-medium truncate ${isTop3 ? "text-foreground" : "text-foreground/80"}`}>
                             {player?.name ?? `Spieler #${row.playerId}`}
                           </p>
-                          {player?.nickname && <p className="text-xs text-muted-foreground">"{player.nickname}"</p>}
+
                         </div>
                         <span className="text-center w-12 text-sm text-muted-foreground">{row.gamesPlayed}</span>
                         <span className="text-center w-10 text-sm text-muted-foreground">{row.wins}/{row.losses}</span>
