@@ -276,7 +276,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
         />
       </div>
 
-      <SidebarInset>
+      <SidebarInset className="flex flex-col min-h-screen">
         {isMobile && (
           <div className="flex border-b border-border/50 h-14 items-center justify-between bg-background/95 px-4 backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-3">
@@ -286,6 +286,26 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
           </div>
         )}
         <main className="flex-1 p-6">{children}</main>
+        <footer className="border-t border-border/30 py-3 px-6 text-center text-xs text-muted-foreground/50">
+          Vibecoded in Hamburg with ♥ &nbsp;·&nbsp; Tool:&nbsp;
+          <a
+            href="https://manus.im/invitation/LLRJFW1UPCDV"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors"
+          >
+            Manus
+          </a>
+          &nbsp;·&nbsp;
+          <a
+            href="https://github.com/mursonic/badminton-liga"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors"
+          >
+            GitHub
+          </a>
+        </footer>
       </SidebarInset>
     </>
   );
