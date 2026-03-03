@@ -34,7 +34,7 @@ export default function Home() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-4xl font-bold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Tischtennis Liga
+              ATSV Badminton Liga
             </h1>
             {activeSeason ? (
               <p className="text-muted-foreground mt-1">

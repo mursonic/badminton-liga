@@ -107,7 +107,7 @@ export default function DashboardLayout({
               <Swords className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-3xl font-bold text-center" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Tischtennis Liga
+              ATSV Badminton Liga
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
               Melde dich an, um auf die Ligaverwaltung zuzugreifen.
@@ -195,7 +195,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
                 <div className="flex items-center gap-2 min-w-0">
                   <Swords className="h-5 w-5 text-primary shrink-0" />
                   <span className="font-semibold tracking-tight truncate text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    TT Liga
+                    ATSV Badminton
                   </span>
                 </div>
               )}
@@ -273,7 +273,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
           <div className="flex border-b border-border/50 h-14 items-center justify-between bg-background/95 px-4 backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="h-9 w-9 rounded-lg" />
-              <span className="font-medium text-foreground">{activeItem?.label ?? "Tischtennis Liga"}</span>
+              <span className="font-medium text-foreground">{activeItem?.label ?? "ATSV Badminton Liga"}</span>
             </div>
           </div>
         )}
