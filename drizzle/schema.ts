@@ -16,6 +16,7 @@ export const players = sqliteTable("players", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
+  gender: text("gender", { enum: ["male", "female", "other"] }).notNull().default("other"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
 });
 

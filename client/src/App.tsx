@@ -13,6 +13,7 @@ import PairRanking from "./pages/PairRanking";
 import Matches from "./pages/Matches";
 import Statistics from "./pages/Statistics";
 import Login from "./pages/Login";
+import ChangePassword from "./pages/ChangePassword";
 import { useAuth } from "./_core/hooks/useAuth";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -61,6 +62,9 @@ function Router() {
       </Route>
       <Route path="/seasons">
         {() => <AdminRoute component={Seasons} />}
+      </Route>
+      <Route path="/admin/change-password">
+        {() => <AdminRoute component={ChangePassword} />}
       </Route>
 
       <Route path="/404" component={NotFound} />

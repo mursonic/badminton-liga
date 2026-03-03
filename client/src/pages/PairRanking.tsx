@@ -134,13 +134,17 @@ export default function PairRanking() {
 
 function RankNumber({ rank }: { rank: number }) {
   if (rank <= 3) {
-    const styles = {
-      1: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-      2: "bg-slate-400/20 text-slate-300 border-slate-400/30",
-      3: "bg-orange-700/20 text-orange-400 border-orange-700/30",
+    // Gold: #FFD700  Silber: #C0C0C0  Bronze: #CD7F32
+    const colorStyle: Record<number, React.CSSProperties> = {
+      1: { color: "#FFD700", borderColor: "rgba(255,215,0,0.4)", backgroundColor: "rgba(255,215,0,0.1)" },
+      2: { color: "#C0C0C0", borderColor: "rgba(192,192,192,0.4)", backgroundColor: "rgba(192,192,192,0.1)" },
+      3: { color: "#CD7F32", borderColor: "rgba(205,127,50,0.4)", backgroundColor: "rgba(205,127,50,0.1)" },
     };
     return (
-      <div className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 ${styles[rank as keyof typeof styles]}`}>
+      <div
+        className="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold shrink-0"
+        style={colorStyle[rank]}
+      >
         {rank}
       </div>
     );

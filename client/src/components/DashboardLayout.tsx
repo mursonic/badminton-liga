@@ -35,8 +35,8 @@ import {
   Trophy,
   Users,
   Users2,
-  Swords,
   ListOrdered,
+  KeyRound,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -79,6 +79,7 @@ const adminMenuGroups = [
     items: [
       { icon: Users, label: "Spieler", path: "/players" },
       { icon: CalendarDays, label: "Saisons", path: "/seasons" },
+      { icon: KeyRound, label: "Passwort ändern", path: "/admin/change-password" },
     ],
   },
 ];
@@ -184,7 +185,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
               </button>
               {!isCollapsed && (
                 <div className="flex items-center gap-2 min-w-0">
-                  <Swords className="h-5 w-5 text-primary shrink-0" />
+                  <BadmintonIcon className="h-5 w-5 text-primary shrink-0" />
                   <span className="font-semibold tracking-tight truncate text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
                     ATSV Badminton
                   </span>
@@ -308,4 +309,33 @@ function mergeMenuGroups(
     }
   }
   return result;
+}
+
+/** Badminton-Schläger-Icon als SVG */
+function BadmintonIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Schläger-Kopf (Oval) */}
+      <ellipse cx="9" cy="7.5" rx="5.5" ry="6.5" transform="rotate(-35 9 7.5)" />
+      {/* Kreuzstreben im Schläger */}
+      <line x1="5.5" y1="4.5" x2="12.5" y2="10.5" />
+      <line x1="4.5" y1="8" x2="13.5" y2="7" />
+      <line x1="6" y1="11" x2="11" y2="4" />
+      {/* Griff */}
+      <line x1="13" y1="12" x2="20" y2="21" strokeWidth="2.5" />
+      {/* Federball-Punkte */}
+      <circle cx="3.5" cy="20.5" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="5.5" cy="22" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="2" cy="22" r="0.8" fill="currentColor" stroke="none" />
+    </svg>
+  );
 }

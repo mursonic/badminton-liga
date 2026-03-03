@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { Trophy, Users, Swords, CalendarDays, PlusCircle, TrendingUp, Medal } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const { data: activeSeason } = trpc.seasons.active.useQuery();
   const { data: players } = trpc.players.listActive.useQuery();
   const { data: ranking } = trpc.rankings.players.useQuery({ seasonId: activeSeason?.id ?? null });
@@ -44,10 +47,12 @@ export default function Home() {
               <p className="text-muted-foreground mt-1">Keine aktive Saison – bitte eine Saison anlegen.</p>
             )}
           </div>
-          <Button onClick={() => setLocation("/matches/new")} className="gap-2">
-            <PlusCircle className="h-4 w-4" />
-            Spiel erfassen
-          </Button>
+          {isAdmin && (
+            <Button onClick={() => setLocation("/matches/new")} className="gap-2">
+              <PlusCircle className="h-4 w-4" />
+              Spiel erfassen
+            </Button>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -59,7 +64,7 @@ export default function Home() {
           />
           <StatCard
             icon={<Swords className="h-5 w-5 text-primary" />}
-            label="Spiele diese Saison"
+            label="Gespielte Spiele"
             value={matches?.length ?? 0}
           />
           <StatCard
@@ -97,7 +102,7 @@ export default function Home() {
                       <RankBadge rank={i + 1} />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{player?.name ?? `Spieler #${row.playerId}`}</p>
-                        <p className="text-xs text-muted-foreground">{row.gamesPlayed} Spiele</p>
+                        <p className="text-xs text-muted-foreground">{row.wins} gewonnene Spiele</p>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-primary">{row.points} Pkt</p>
@@ -171,19 +176,18 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 }
 
 function RankBadge({ rank }: { rank: number }) {
-  const styles: Record<number, string> = {
-    1: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    2: "bg-slate-400/20 text-slate-300 border-slate-400/30",
-    3: "bg-orange-700/20 text-orange-400 border-orange-700/30",
-  };
-  const icons: Record<number, React.ReactNode> = {
-    1: <Medal className="h-3 w-3" />,
-    2: <Medal className="h-3 w-3" />,
-    3: <Medal className="h-3 w-3" />,
+  // Gold: #FFD700  Silber: #C0C0C0  Bronze: #CD7F32
+  const colorStyle: Record<number, React.CSSProperties> = {
+    1: { color: "#FFD700", borderColor: "rgba(255,215,0,0.4)", backgroundColor: "rgba(255,215,0,0.1)" },
+    2: { color: "#C0C0C0", borderColor: "rgba(192,192,192,0.4)", backgroundColor: "rgba(192,192,192,0.1)" },
+    3: { color: "#CD7F32", borderColor: "rgba(205,127,50,0.4)", backgroundColor: "rgba(205,127,50,0.1)" },
   };
   return (
-    <div className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 text-xs font-bold ${styles[rank] ?? "bg-muted text-muted-foreground border-border"}`}>
-      {icons[rank] ?? rank}
+    <div
+      className="w-8 h-8 rounded-full border flex items-center justify-center shrink-0"
+      style={colorStyle[rank] ?? {}}
+    >
+      <Medal className="h-3.5 w-3.5" />
     </div>
   );
 }

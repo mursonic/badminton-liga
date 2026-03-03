@@ -26,6 +26,8 @@ import {
   getPairRanking,
   getPlayerRanking,
   setActiveSeason,
+  updateAdminPassword,
+  updateMatch,
   updatePlayer,
   updateSeason,
 } from "./db";
@@ -98,6 +100,19 @@ export const appRouter = router({
       const count = await countAdminUsers();
       return count === 0;
     }),
+
+    /** Change admin password */
+    changePassword: protectedProcedure
+      .input(z.object({ currentPassword: z.string(), newPassword: z.string().min(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const admin = await getAdminByUsername(ctx.user!.username);
+        if (!admin) throw new TRPCError({ code: "NOT_FOUND" });
+        const valid = await bcrypt.compare(input.currentPassword, admin.passwordHash);
+        if (!valid) throw new TRPCError({ code: "UNAUTHORIZED", message: "Aktuelles Passwort ist falsch." });
+        const newHash = await bcrypt.hash(input.newPassword, 12);
+        await updateAdminPassword(admin.id, newHash);
+        return { success: true };
+      }),
   }),
 
   // ─── Players ───────────────────────────────────────────────────────────────
@@ -106,11 +121,11 @@ export const appRouter = router({
     listActive: publicProcedure.query(() => getActivePlayers()),
 
     create: adminProcedure
-      .input(z.object({ name: z.string().min(1).max(128), active: z.boolean().default(true) }))
+      .input(z.object({ name: z.string().min(1).max(128), active: z.boolean().default(true), gender: z.enum(["male", "female", "other"]).default("other") }))
       .mutation(({ input }) => createPlayer(input)),
 
     update: adminProcedure
-      .input(z.object({ id: z.number(), name: z.string().min(1).max(128).optional(), active: z.boolean().optional() }))
+      .input(z.object({ id: z.number(), name: z.string().min(1).max(128).optional(), active: z.boolean().optional(), gender: z.enum(["male", "female", "other"]).optional() }))
       .mutation(({ input }) => { const { id, ...data } = input; return updatePlayer(id, data); }),
 
     delete: adminProcedure
@@ -178,6 +193,23 @@ export const appRouter = router({
           sets
         );
         return { matchId };
+      }),
+
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        winningSide: z.number().min(1).max(2).optional(),
+        playedAt: z.string().optional(),
+        sets: z.array(z.object({ scoreTeam1: z.number().min(0), scoreTeam2: z.number().min(0) })).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, sets, playedAt, ...data } = input;
+        await updateMatch(
+          id,
+          { ...data, ...(playedAt ? { playedAt: new Date(playedAt) } : {}) },
+          sets
+        );
+        return { success: true };
       }),
 
     delete: adminProcedure

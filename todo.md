@@ -53,3 +53,11 @@
 - [x] Frontend: Login nur für Admin-Seiten (Spieler verwalten, Saisons, Spiel erfassen)
 - [x] Frontend: Login-Button in der Sidebar sichtbar wenn nicht eingeloggt
 - [x] Frontend: Admin-Menüpunkte nur für eingeloggte Admins anzeigen
+
+## Bugfixes Runde 2
+- [x] Admin: Passwort ändern (neue Seite/Dialog in Einstellungen)
+- [x] Spielstand bearbeiten (Sätze korrigieren nach Erfassung)
+- [x] Geschlecht-Feld bei Spielern wieder einbauen
+- [x] Medaillen-Farben korrigieren (Gold #FFD700, Silber #C0C0C0, Bronze #CD7F32)
+- [x] Dashboard: "Spiele" → "Gewonnene Spiele"
+- [x] Logo: Schwerter → Badmintonschläger (SVG)

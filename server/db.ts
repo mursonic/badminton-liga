@@ -49,8 +49,11 @@ function initDb(db: ReturnType<typeof drizzle>) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       active INTEGER NOT NULL DEFAULT 1,
+      gender TEXT NOT NULL DEFAULT 'other',
       created_at INTEGER NOT NULL DEFAULT (unixepoch('now') * 1000)
     )`,
+    // Migration: add gender column if it doesn't exist yet
+    `ALTER TABLE players ADD COLUMN gender TEXT NOT NULL DEFAULT 'other'`,
     `CREATE TABLE IF NOT EXISTS seasons (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       year INTEGER NOT NULL UNIQUE,
@@ -79,7 +82,8 @@ function initDb(db: ReturnType<typeof drizzle>) {
     )`,
   ];
   // Execute synchronously via batch
-  Promise.all(stmts.map(s => client.execute(s))).catch(e => console.error("[DB init]", e));
+  // Run all statements; ignore errors for ALTER TABLE (column may already exist)
+  Promise.all(stmts.map(s => client.execute(s).catch(() => {}))).catch(e => console.error("[DB init]", e));
 }
 
 // ─── Admin Auth ───────────────────────────────────────────────────────────────
@@ -93,6 +97,11 @@ export async function getAdminByUsername(username: string) {
 export async function createAdminUser(data: Omit<InsertAdminUser, "id" | "createdAt">) {
   const db = getDb();
   await db.insert(adminUsers).values(data);
+}
+
+export async function updateAdminPassword(id: number, newHash: string) {
+  const db = getDb();
+  await db.update(adminUsers).set({ passwordHash: newHash }).where(eq(adminUsers.id, id));
 }
 
 export async function countAdminUsers(): Promise<number> {
@@ -198,6 +207,23 @@ export async function createMatch(
     await db.insert(matchSets).values(sets.map((s, i) => ({ ...s, matchId, setNumber: i + 1 })));
   }
   return matchId;
+}
+
+export async function updateMatch(
+  id: number,
+  data: { winningSide?: number; playedAt?: Date },
+  sets?: Omit<InsertMatchSet, "id" | "matchId" | "setNumber">[]
+) {
+  const db = getDb();
+  if (Object.keys(data).length > 0) {
+    await db.update(matches).set(data).where(eq(matches.id, id));
+  }
+  if (sets) {
+    await db.delete(matchSets).where(eq(matchSets.matchId, id));
+    if (sets.length > 0) {
+      await db.insert(matchSets).values(sets.map((s, i) => ({ ...s, matchId: id, setNumber: i + 1 })));
+    }
+  }
 }
 
 export async function deleteMatch(id: number) {

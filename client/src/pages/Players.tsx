@@ -11,17 +11,33 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { Pencil, PlusCircle, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+type Gender = "male" | "female" | "other";
+
 interface PlayerData {
   id: number;
   name: string;
   active: boolean;
+  gender: Gender;
   createdAt: Date;
 }
+
+const genderLabel: Record<Gender, string> = {
+  male: "Männlich",
+  female: "Weiblich",
+  other: "Divers / k.A.",
+};
 
 export default function Players() {
   const utils = trpc.useUtils();
@@ -62,8 +78,9 @@ export default function Players() {
   const [editing, setEditing] = useState<PlayerData | null>(null);
   const [name, setName] = useState("");
   const [active, setActive] = useState(true);
+  const [gender, setGender] = useState<Gender>("other");
 
-  const resetForm = () => { setName(""); setActive(true); };
+  const resetForm = () => { setName(""); setActive(true); setGender("other"); };
 
   const openCreate = () => { resetForm(); setEditing(null); setDialogOpen(true); };
 
@@ -71,15 +88,16 @@ export default function Players() {
     setEditing(p);
     setName(p.name);
     setActive(p.active);
+    setGender(p.gender ?? "other");
     setDialogOpen(true);
   };
 
   const handleSubmit = () => {
     if (!name.trim()) { toast.error("Name ist erforderlich."); return; }
     if (editing) {
-      updateMutation.mutate({ id: editing.id, name: name.trim(), active });
+      updateMutation.mutate({ id: editing.id, name: name.trim(), active, gender });
     } else {
-      createMutation.mutate({ name: name.trim(), active });
+      createMutation.mutate({ name: name.trim(), active, gender });
     }
   };
 
@@ -123,7 +141,7 @@ export default function Players() {
                 <CardContent>
                   <div className="divide-y divide-border/30">
                     {active_players.map(p => (
-                      <PlayerRow key={p.id} player={p} onEdit={openEdit} onDelete={handleDelete} />
+                      <PlayerRow key={p.id} player={p as PlayerData} onEdit={openEdit} onDelete={handleDelete} />
                     ))}
                   </div>
                 </CardContent>
@@ -140,7 +158,7 @@ export default function Players() {
                 <CardContent>
                   <div className="divide-y divide-border/30">
                     {inactive_players.map(p => (
-                      <PlayerRow key={p.id} player={p} onEdit={openEdit} onDelete={handleDelete} />
+                      <PlayerRow key={p.id} player={p as PlayerData} onEdit={openEdit} onDelete={handleDelete} />
                     ))}
                   </div>
                 </CardContent>
@@ -179,6 +197,19 @@ export default function Players() {
                 onKeyDown={e => e.key === "Enter" && handleSubmit()}
               />
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="gender">Geschlecht</Label>
+              <Select value={gender} onValueChange={(v) => setGender(v as Gender)}>
+                <SelectTrigger id="gender" className="bg-input border-border/50">
+                  <SelectValue placeholder="Geschlecht wählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Männlich</SelectItem>
+                  <SelectItem value="female">Weiblich</SelectItem>
+                  <SelectItem value="other">Divers / k.A.</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center gap-3">
               <Switch id="active" checked={active} onCheckedChange={setActive} />
               <Label htmlFor="active">Aktiv</Label>
@@ -208,13 +239,24 @@ function PlayerRow({
   onEdit: (p: PlayerData) => void;
   onDelete: (id: number, name: string) => void;
 }) {
+  const genderBadge: Record<Gender, string> = {
+    male: "♂",
+    female: "♀",
+    other: "",
+  };
+
   return (
     <div className="flex items-center gap-3 py-3">
       <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
         <span className="text-sm font-semibold text-primary">{player.name.charAt(0).toUpperCase()}</span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground">{player.name}</p>
+        <p className="font-medium text-foreground">
+          {player.name}
+          {genderBadge[player.gender ?? "other"] && (
+            <span className="ml-1.5 text-muted-foreground text-sm">{genderBadge[player.gender ?? "other"]}</span>
+          )}
+        </p>
       </div>
       <div className="flex gap-1">
         <Button
