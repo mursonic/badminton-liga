@@ -105,9 +105,9 @@ export async function getAllSeasons() {
 
 export async function getActiveSeason() {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(seasons).where(eq(seasons.isActive, true)).limit(1);
-  return result[0] ?? undefined;
+  return result[0] ?? null;
 }
 
 export async function createSeason(data: Omit<InsertSeason, "id" | "createdAt">) {
@@ -143,7 +143,7 @@ export async function getMatchById(id: number) {
   const db = await getDb();
   if (!db) return undefined;
   const result = await db.select().from(matches).where(eq(matches.id, id)).limit(1);
-  return result[0] ?? undefined;
+  return result[0] ?? null;
 }
 
 export async function createMatch(

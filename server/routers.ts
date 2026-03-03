@@ -84,7 +84,7 @@ export const appRouter = router({
   // ─── Seasons ───────────────────────────────────────────────────────────────
   seasons: router({
     list: publicProcedure.query(() => getAllSeasons()),
-    active: publicProcedure.query(() => getActiveSeason()),
+    active: publicProcedure.query(async () => (await getActiveSeason()) ?? null),
 
     create: adminProcedure
       .input(

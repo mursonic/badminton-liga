@@ -31,3 +31,6 @@
 - [x] Vitest: Tests für Rankings-Berechnung
 - [x] Vitest: Tests für Match-Erstellung
 - [x] Checkpoint speichern
+
+## Bugfixes
+- [x] seasons.active Query gibt undefined zurück (muss null sein) → React Query Fehler auf /matches/new
