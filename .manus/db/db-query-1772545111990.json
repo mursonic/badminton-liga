@@ -1,0 +1,45 @@
+{
+  "query": "SELECT COLUMN_NAME, COLUMN_TYPE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'players' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute SELECT COLUMN_NAME, COLUMN_TYPE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'players' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id",
+      "COLUMN_TYPE": "int",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "name",
+      "COLUMN_TYPE": "varchar(128)",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "nickname",
+      "COLUMN_TYPE": "varchar(64)",
+      "COLUMN_DEFAULT": "NULL"
+    },
+    {
+      "COLUMN_NAME": "gender",
+      "COLUMN_TYPE": "enum('male','female','other')",
+      "COLUMN_DEFAULT": "other"
+    },
+    {
+      "COLUMN_NAME": "active",
+      "COLUMN_TYPE": "tinyint(1)",
+      "COLUMN_DEFAULT": "1"
+    },
+    {
+      "COLUMN_NAME": "createdAt",
+      "COLUMN_TYPE": "timestamp",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP"
+    },
+    {
+      "COLUMN_NAME": "updatedAt",
+      "COLUMN_TYPE": "timestamp",
+      "COLUMN_DEFAULT": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\tCOLUMN_TYPE\tCOLUMN_DEFAULT\nid\tint\tNULL\nname\tvarchar(128)\tNULL\nnickname\tvarchar(64)\tNULL\ngender\tenum('male','female','other')\tother\nactive\ttinyint(1)\t1\ncreatedAt\ttimestamp\tCURRENT_TIMESTAMP\nupdatedAt\ttimestamp\tCURRENT_TIMESTAMP\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

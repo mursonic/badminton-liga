@@ -1,68 +1,95 @@
-import { int, sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  int,
+  mysqlEnum,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+  boolean,
+  bigint,
+} from "drizzle-orm/mysql-core";
 
 // ─── Admin Users ──────────────────────────────────────────────────────────────
-export const adminUsers = sqliteTable("admin_users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  username: text("username").notNull().unique(),
+
+export const adminUsers = mysqlTable("admin_users", {
+  id: int("id").autoincrement().primaryKey(),
+  username: varchar("username", { length: 64 }).notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: bigint("created_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
 });
 
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type InsertAdminUser = typeof adminUsers.$inferInsert;
 
 // ─── Players ──────────────────────────────────────────────────────────────────
-export const players = sqliteTable("players", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  active: integer("active", { mode: "boolean" }).notNull().default(true),
-  gender: text("gender", { enum: ["male", "female", "other"] }).notNull().default("other"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+
+export const players = mysqlTable("players", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 128 }).notNull(),
+  active: boolean("active").notNull().default(true),
+  gender: mysqlEnum("gender", ["male", "female", "other"]).notNull().default("other"),
+  createdAt: bigint("created_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
 });
 
 export type Player = typeof players.$inferSelect;
 export type InsertPlayer = typeof players.$inferInsert;
 
 // ─── Seasons ──────────────────────────────────────────────────────────────────
-export const seasons = sqliteTable("seasons", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  year: integer("year").notNull().unique(),
-  name: text("name").notNull(),
-  isActive: integer("is_active", { mode: "boolean" }).notNull().default(false),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+
+export const seasons = mysqlTable("seasons", {
+  id: int("id").autoincrement().primaryKey(),
+  year: int("year").notNull().unique(),
+  name: varchar("name", { length: 64 }).notNull(),
+  isActive: boolean("is_active").notNull().default(false),
+  createdAt: bigint("created_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
 });
 
 export type Season = typeof seasons.$inferSelect;
 export type InsertSeason = typeof seasons.$inferInsert;
 
 // ─── Matches ──────────────────────────────────────────────────────────────────
-export const matches = sqliteTable("matches", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  seasonId: integer("season_id").notNull().references(() => seasons.id),
-  type: text("type", { enum: ["singles", "doubles", "mixed"] }).notNull(),
-  // Singles: player1Id vs player2Id
-  // Doubles/Mixed: player1Id+player2Id vs player3Id+player4Id
-  player1Id: integer("player1_id").notNull().references(() => players.id),
-  player2Id: integer("player2_id").references(() => players.id),
-  player3Id: integer("player3_id").notNull().references(() => players.id),
-  player4Id: integer("player4_id").references(() => players.id),
-  // 1 = team1 (player1+2) won, 2 = team2 (player3+4) won
-  winningSide: integer("winning_side", { mode: "number" }).notNull(),
-  playedAt: integer("played_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+
+export const matches = mysqlTable("matches", {
+  id: int("id").autoincrement().primaryKey(),
+  seasonId: int("seasonId").notNull(),
+  type: mysqlEnum("type", ["singles", "doubles", "mixed"]).notNull(),
+  player1Id: int("player1_id").notNull(),
+  player2Id: int("player2_id"),
+  player3Id: int("player3_id").notNull(),
+  player4Id: int("player4_id"),
+  winningSide: int("winning_side").notNull(),
+  playedAt: bigint("played_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
+  createdAt: bigint("new_created_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
 });
 
 export type Match = typeof matches.$inferSelect;
 export type InsertMatch = typeof matches.$inferInsert;
 
 // ─── Match Sets ───────────────────────────────────────────────────────────────
-export const matchSets = sqliteTable("match_sets", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  matchId: integer("match_id").notNull().references(() => matches.id),
-  setNumber: integer("set_number").notNull(),
-  scoreTeam1: integer("score_team1").notNull(),
-  scoreTeam2: integer("score_team2").notNull(),
+
+export const matchSets = mysqlTable("match_sets", {
+  id: int("id").autoincrement().primaryKey(),
+  matchId: int("matchId").notNull(),
+  setNumber: int("set_number").notNull(),
+  scoreTeam1: int("score_team1").notNull(),
+  scoreTeam2: int("score_team2").notNull(),
 });
 
 export type MatchSet = typeof matchSets.$inferSelect;
 export type InsertMatchSet = typeof matchSets.$inferInsert;
+
+// Legacy users table (required by Manus auth core – do not remove)
+export const users = mysqlTable("users", {
+  id: int("id").autoincrement().primaryKey(),
+  openId: varchar("openId", { length: 64 }).notNull().unique(),
+  name: text("name"),
+  email: varchar("email", { length: 320 }),
+  loginMethod: varchar("loginMethod", { length: 64 }),
+  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+});
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;

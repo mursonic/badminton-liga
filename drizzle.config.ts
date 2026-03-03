@@ -1,13 +1,12 @@
 import { defineConfig } from "drizzle-kit";
-import path from "path";
-
-const dbPath = process.env.SQLITE_DB_PATH || path.join(process.cwd(), "data", "liga.db");
+import dotenv from "dotenv";
+dotenv.config();
 
 export default defineConfig({
   schema: "./drizzle/schema.ts",
   out: "./drizzle/migrations",
-  dialect: "turso",
+  dialect: "mysql",
   dbCredentials: {
-    url: `file:${dbPath}`,
+    url: process.env.DATABASE_URL!,
   },
 });

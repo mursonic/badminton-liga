@@ -62,3 +62,11 @@
 - [x] Dashboard: "Spiele" → "Gewonnene Spiele"
 - [x] Logo: Schwerter → Badmintonschläger (SVG)
 - [x] Einzelrangliste Podium: Gold (Platz 1) und Silber (Platz 2) Farben vertauscht
+
+## MySQL-Rückumstellung (Daten-Persistenz auf Manus)
+- [x] Schema auf MySQL (mysql-core) umstellen
+- [x] db.ts auf mysql2/drizzle umstellen, initDb entfernen
+- [x] Auth: bcrypt-Login bleibt, aber MySQL statt SQLite
+- [x] drizzle.config.ts auf MySQL zurückstellen
+- [x] pnpm db:push Migration ausführen (manuelle SQL-Migration)
+- [x] Tests anpassen und grün (8/8)

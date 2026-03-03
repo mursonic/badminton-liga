@@ -30,7 +30,7 @@ interface PlayerData {
   name: string;
   active: boolean;
   gender: Gender;
-  createdAt: Date;
+  createdAt: number | Date;
 }
 
 const genderLabel: Record<Gender, string> = {

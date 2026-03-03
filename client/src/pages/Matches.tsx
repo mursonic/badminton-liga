@@ -109,7 +109,7 @@ export default function Matches() {
     return `${p1} & ${p2}`;
   };
 
-  const formatDate = (d: Date) => new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const formatDate = (d: number | Date) => new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
   const handleDelete = (id: number) => {
     if (confirm("Spiel wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")) {

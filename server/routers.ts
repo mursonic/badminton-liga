@@ -20,16 +20,17 @@ import {
   getAllPlayers,
   getAllSeasons,
   getMatchById,
-  getMatchesBySeasonId,
-  getMatchSetsByMatchId,
-  getOverallPlayerStats,
-  getPairRanking,
-  getPlayerRanking,
+  getMatchesBySeason,
+  getSetsByMatch,
+  computePairRanking,
+  computePlayerRanking,
   setActiveSeason,
   updateAdminPassword,
   updateMatch,
+  updateMatchSets,
   updatePlayer,
   updateSeason,
+  createMatchSets,
 } from "./db";
 
 const JWT_SECRET = new TextEncoder().encode(
@@ -159,7 +160,7 @@ export const appRouter = router({
   matches: router({
     listBySeason: publicProcedure
       .input(z.object({ seasonId: z.number() }))
-      .query(({ input }) => getMatchesBySeasonId(input.seasonId)),
+      .query(({ input }) => getMatchesBySeason(input.seasonId)),
 
     listAll: publicProcedure.query(() => getAllMatches()),
 
@@ -168,7 +169,7 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const match = await getMatchById(input.id);
         if (!match) throw new TRPCError({ code: "NOT_FOUND" });
-        const sets = await getMatchSetsByMatchId(input.id);
+        const sets = await getSetsByMatch(input.id);
         return { ...match, sets };
       }),
 
@@ -188,10 +189,8 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         const { sets, playedAt, ...matchData } = input;
-        const matchId = await createMatch(
-          { ...matchData, playedAt: playedAt ? new Date(playedAt) : new Date() },
-          sets
-        );
+        const matchId = await createMatch({ ...matchData });
+        await createMatchSets(sets.map((s, i) => ({ matchId, setNumber: i + 1, scoreTeam1: s.scoreTeam1, scoreTeam2: s.scoreTeam2 })));
         return { matchId };
       }),
 
@@ -204,11 +203,10 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const { id, sets, playedAt, ...data } = input;
-        await updateMatch(
-          id,
-          { ...data, ...(playedAt ? { playedAt: new Date(playedAt) } : {}) },
-          sets
-        );
+        await updateMatch(id, { ...data });
+        if (sets) {
+          await updateMatchSets(id, sets.map((s, i) => ({ matchId: id, setNumber: i + 1, scoreTeam1: s.scoreTeam1, scoreTeam2: s.scoreTeam2 })));
+        }
         return { success: true };
       }),
 
@@ -221,16 +219,19 @@ export const appRouter = router({
   rankings: router({
     players: publicProcedure
       .input(z.object({ seasonId: z.number().nullable() }))
-      .query(({ input }) => getPlayerRanking(input.seasonId)),
+      .query(({ input }) => computePlayerRanking(input.seasonId)),
 
     pairs: publicProcedure
       .input(z.object({ seasonId: z.number().nullable(), matchType: z.enum(["doubles", "mixed"]).optional() }))
-      .query(({ input }) => getPairRanking(input.seasonId, input.matchType)),
+      .query(({ input }) => computePairRanking(input.seasonId, input.matchType)),
   }),
 
   // ─── Stats ─────────────────────────────────────────────────────────────────
   stats: router({
-    overallPlayers: publicProcedure.query(() => getOverallPlayerStats()),
+    overallPlayers: publicProcedure.query(async () => {
+      const ranking = await computePlayerRanking(null);
+      return ranking.slice(0, 10);
+    }),
   }),
 });
 

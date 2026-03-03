@@ -1,1 +1,0 @@
-ALTER TABLE `players` ADD `gender` text DEFAULT 'other' NOT NULL;
