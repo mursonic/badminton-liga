@@ -132,8 +132,21 @@ export async function getMatchById(id: number) {
 export async function createMatch(data: Omit<InsertMatch, "id" | "createdAt" | "playedAt">) {
   const db = getDb();
   const now = Date.now();
-  const result = await db.insert(matches).values({ ...data, playedAt: now, createdAt: now });
-  return (result as any).insertId as number;
+  const result = await db.insert(matches).values({
+    seasonId: data.seasonId,
+    type: data.type,
+    player1Id: data.player1Id,
+    player2Id: data.player2Id ?? null,
+    player3Id: data.player3Id,
+    player4Id: data.player4Id ?? null,
+    winningSide: data.winningSide,
+    playedAt: now,
+    createdAt: now,
+  });
+  // Drizzle mysql2 returns [ResultSetHeader, ...] – insertId is on index 0
+  const insertId = (result as any)?.[0]?.insertId ?? (result as any)?.insertId;
+  if (!insertId) throw new Error('Failed to get insertId from match insert');
+  return insertId as number;
 }
 
 export async function updateMatch(
@@ -166,14 +179,21 @@ export async function getSetsByMatches(matchIds: number[]) {
 export async function createMatchSets(sets: Omit<InsertMatchSet, "id">[]) {
   if (sets.length === 0) return;
   const db = getDb();
-  await db.insert(matchSets).values(sets);
+  // Use raw SQL to avoid Drizzle camelCase column mapping issues with 'matchId'
+  for (const s of sets) {
+    await db.execute(
+      sql`INSERT INTO match_sets (matchId, setNumber, score_team1, score_team2) VALUES (${s.matchId}, ${s.setNumber}, ${s.scoreTeam1}, ${s.scoreTeam2})`
+    );
+  }
 }
 
 export async function updateMatchSets(matchId: number, sets: Omit<InsertMatchSet, "id">[]) {
   const db = getDb();
-  await db.delete(matchSets).where(eq(matchSets.matchId, matchId));
-  if (sets.length > 0) {
-    await db.insert(matchSets).values(sets);
+  await db.execute(sql`DELETE FROM match_sets WHERE matchId = ${matchId}`);
+  for (const s of sets) {
+    await db.execute(
+      sql`INSERT INTO match_sets (matchId, setNumber, score_team1, score_team2) VALUES (${s.matchId}, ${s.setNumber}, ${s.scoreTeam1}, ${s.scoreTeam2})`
+    );
   }
 }
 

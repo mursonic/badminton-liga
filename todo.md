@@ -71,3 +71,4 @@
 - [x] pnpm db:push Migration ausführen (manuelle SQL-Migration)
 - [x] Tests anpassen und grün (8/8)
 - [x] match_sets SQL-Fehler: setNumber-Spaltenname war falsch (set_number statt setNumber)
+- [x] Spiele eintragen schlägt fehl (matches.create Fehler) - behoben: Admin-User fehlte, DB-Spalten nullable gemacht, insertId-Mapping korrigiert

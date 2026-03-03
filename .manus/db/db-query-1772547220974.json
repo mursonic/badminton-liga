@@ -1,0 +1,24 @@
+{
+  "query": "SHOW CREATE TABLE match_sets;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute SHOW CREATE TABLE match_sets;",
+  "rows": [
+    {
+      "Table": "match_sets",
+      "Create Table": "CREATE TABLE `match_sets` ("
+    }
+  ],
+  "messages": [
+    "  `id` int NOT NULL AUTO_INCREMENT,",
+    "  `matchId` int NOT NULL,",
+    "  `setNumber` int NOT NULL,",
+    "  `team1Score` int NOT NULL,",
+    "  `team2Score` int NOT NULL,",
+    "  `score_team1` int DEFAULT NULL,",
+    "  `score_team2` int DEFAULT NULL,",
+    "  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */",
+    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=30001"
+  ],
+  "stdout": "Table\tCreate Table\nmatch_sets\tCREATE TABLE `match_sets` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `matchId` int NOT NULL,\n  `setNumber` int NOT NULL,\n  `team1Score` int NOT NULL,\n  `team2Score` int NOT NULL,\n  `score_team1` int DEFAULT NULL,\n  `score_team2` int DEFAULT NULL,\n  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=30001\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

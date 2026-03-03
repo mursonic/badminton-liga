@@ -1,0 +1,9 @@
+{
+  "query": "\nALTER TABLE matches \n  MODIFY COLUMN matchType ENUM('singles','doubles','mixed') NULL DEFAULT NULL,\n  MODIFY COLUMN team1Player1Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN team1Player2Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2Player1Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2Player2Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN winner ENUM('team1','team2') NULL DEFAULT NULL,\n  MODIFY COLUMN team1TotalPoints INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2TotalPoints INT NULL DEFAULT NULL,\n  MODIFY COLUMN team1Sets INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2Sets INT NULL DEFAULT NULL,\n  MODIFY COLUMN playedAt TIMESTAMP NULL DEFAULT NULL,\n  MODIFY COLUMN notes TEXT NULL DEFAULT NULL;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \nALTER TABLE matches \n  MODIFY COLUMN matchType ENUM('singles','doubles','mixed') NULL DEFAULT NULL,\n  MODIFY COLUMN team1Player1Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN team1Player2Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2Player1Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2Player2Id INT NULL DEFAULT NULL,\n  MODIFY COLUMN winner ENUM('team1','team2') NULL DEFAULT NULL,\n  MODIFY COLUMN team1TotalPoints INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2TotalPoints INT NULL DEFAULT NULL,\n  MODIFY COLUMN team1Sets INT NULL DEFAULT NULL,\n  MODIFY COLUMN team2Sets INT NULL DEFAULT NULL,\n  MODIFY COLUMN playedAt TIMESTAMP NULL DEFAULT NULL,\n  MODIFY COLUMN notes TEXT NULL DEFAULT NULL;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 653
+}
