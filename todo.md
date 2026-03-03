@@ -70,3 +70,4 @@
 - [x] drizzle.config.ts auf MySQL zurückstellen
 - [x] pnpm db:push Migration ausführen (manuelle SQL-Migration)
 - [x] Tests anpassen und grün (8/8)
+- [x] match_sets SQL-Fehler: setNumber-Spaltenname war falsch (set_number statt setNumber)
