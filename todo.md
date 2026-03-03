@@ -46,3 +46,10 @@
 - [x] Frontend: Login-Seite bauen
 - [x] Frontend: Auth-Hook anpassen
 - [x] Installationsanleitung (README) erstellen
+
+## Öffentliche Ansichten (kein Login erforderlich)
+- [x] Backend: Ranglisten, Matches, Statistiken, Spieler, Saisons als publicProcedure freigeben
+- [x] Frontend: DashboardLayout zeigt Navigation auch ohne Login
+- [x] Frontend: Login nur für Admin-Seiten (Spieler verwalten, Saisons, Spiel erfassen)
+- [x] Frontend: Login-Button in der Sidebar sichtbar wenn nicht eingeloggt
+- [x] Frontend: Admin-Menüpunkte nur für eingeloggte Admins anzeigen

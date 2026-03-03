@@ -22,13 +22,13 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import {
   BarChart3,
   CalendarDays,
   ChevronRight,
   LayoutDashboard,
+  LogIn,
   LogOut,
   PanelLeft,
   PlusCircle,
@@ -41,9 +41,9 @@ import {
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
-import { Button } from "./ui/button";
 
-const menuGroups = [
+// Öffentliche Menüpunkte – immer sichtbar
+const publicMenuGroups = [
   {
     label: "Übersicht",
     items: [
@@ -62,6 +62,15 @@ const menuGroups = [
     label: "Spiele",
     items: [
       { icon: ListOrdered, label: "Alle Spiele", path: "/matches" },
+    ],
+  },
+];
+
+// Admin-Menüpunkte – nur für eingeloggte Admins
+const adminMenuGroups = [
+  {
+    label: "Spiele",
+    items: [
       { icon: PlusCircle, label: "Spiel erfassen", path: "/matches/new" },
     ],
   },
@@ -88,7 +97,7 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  const { loading } = useAuth();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -98,33 +107,7 @@ export default function DashboardLayout({
     return <DashboardLayoutSkeleton />;
   }
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Swords className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold text-center" style={{ fontFamily: "'Playfair Display', serif" }}>
-              ATSV Badminton Liga
-            </h1>
-            <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Melde dich an, um auf die Ligaverwaltung zuzugreifen.
-            </p>
-          </div>
-          <Button
-            onClick={() => { window.location.href = getLoginUrl(); }}
-            size="lg"
-            className="w-full"
-          >
-            Anmelden
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
+  // Immer rendern – kein Login-Gate mehr auf Layout-Ebene
   return (
     <SidebarProvider
       style={{ "--sidebar-width": `${sidebarWidth}px` } as CSSProperties}
@@ -150,7 +133,15 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const activeItem = menuGroups.flatMap(g => g.items).find(item => item.path === location);
+  const isAdmin = user?.role === "admin";
+
+  // Alle sichtbaren Gruppen zusammenstellen
+  const visibleGroups = isAdmin
+    ? mergeMenuGroups(publicMenuGroups, adminMenuGroups)
+    : publicMenuGroups;
+
+  const allItems = visibleGroups.flatMap(g => g.items);
+  const activeItem = allItems.find(item => item.path === location);
 
   useEffect(() => {
     if (isCollapsed) setIsResizing(false);
@@ -203,8 +194,8 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
           </SidebarHeader>
 
           <SidebarContent className="gap-0 py-2">
-            {menuGroups.map((group, gi) => (
-              <SidebarGroup key={group.label}>
+            {visibleGroups.map((group, gi) => (
+              <SidebarGroup key={group.label + gi}>
                 {!isCollapsed && (
                   <SidebarGroupLabel className="text-xs text-muted-foreground/60 uppercase tracking-widest px-4 py-1">
                     {group.label}
@@ -229,35 +220,51 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
                     );
                   })}
                 </SidebarMenu>
-                {gi < menuGroups.length - 1 && !isCollapsed && <SidebarSeparator className="my-1 bg-border/30" />}
+                {gi < visibleGroups.length - 1 && !isCollapsed && <SidebarSeparator className="my-1 bg-border/30" />}
               </SidebarGroup>
             ))}
           </SidebarContent>
 
           <SidebarFooter className="p-3 border-t border-border/50">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/10 transition-colors w-full text-left focus:outline-none">
-                  <Avatar className="h-8 w-8 border border-border/50 shrink-0">
-                    <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
-                      {user?.username?.charAt(0).toUpperCase() ?? "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  {!isCollapsed && (
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate leading-none text-foreground">{user?.username || "–"}</p>
-                      <p className="text-xs text-muted-foreground truncate mt-1">{user?.role === "admin" ? "Administrator" : "Mitglied"}</p>
-                    </div>
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Abmelden</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {isAdmin ? (
+              /* Eingeloggt: Benutzer-Dropdown mit Abmelden */
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/10 transition-colors w-full text-left focus:outline-none">
+                    <Avatar className="h-8 w-8 border border-border/50 shrink-0">
+                      <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+                        {user?.username?.charAt(0).toUpperCase() ?? "A"}
+                      </AvatarFallback>
+                    </Avatar>
+                    {!isCollapsed && (
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate leading-none text-foreground">{user?.username || "–"}</p>
+                        <p className="text-xs text-muted-foreground truncate mt-1">Administrator</p>
+                      </div>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Abmelden</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              /* Nicht eingeloggt: Anmelden-Button */
+              <button
+                onClick={() => setLocation("/login")}
+                className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/10 transition-colors w-full text-left focus:outline-none"
+              >
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <LogIn className="h-4 w-4 text-muted-foreground" />
+                </div>
+                {!isCollapsed && (
+                  <span className="text-sm text-muted-foreground">Admin-Anmeldung</span>
+                )}
+              </button>
+            )}
           </SidebarFooter>
         </Sidebar>
 
@@ -281,4 +288,24 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
       </SidebarInset>
     </>
   );
+}
+
+/** Fügt Admin-Gruppen in die bestehende Struktur ein:
+ *  "Spiel erfassen" wird in die bestehende "Spiele"-Gruppe eingefügt,
+ *  "Verwaltung" wird als neue Gruppe angehängt. */
+function mergeMenuGroups(
+  pub: typeof publicMenuGroups,
+  admin: typeof adminMenuGroups
+) {
+  const result = pub.map(g => ({ ...g, items: [...g.items] }));
+
+  for (const adminGroup of admin) {
+    const existing = result.find(g => g.label === adminGroup.label);
+    if (existing) {
+      existing.items.push(...adminGroup.items);
+    } else {
+      result.push({ ...adminGroup, items: [...adminGroup.items] });
+    }
+  }
+  return result;
 }
