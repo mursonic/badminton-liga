@@ -61,3 +61,4 @@
 - [x] Medaillen-Farben korrigieren (Gold #FFD700, Silber #C0C0C0, Bronze #CD7F32)
 - [x] Dashboard: "Spiele" → "Gewonnene Spiele"
 - [x] Logo: Schwerter → Badmintonschläger (SVG)
+- [x] Einzelrangliste Podium: Gold (Platz 1) und Silber (Platz 2) Farben vertauscht

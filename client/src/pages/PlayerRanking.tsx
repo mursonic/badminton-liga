@@ -63,12 +63,14 @@ export default function PlayerRanking() {
             {/* Top 3 Podium */}
             {(ranking?.length ?? 0) >= 3 && (
               <div className="grid grid-cols-3 gap-3 mb-2">
+                {/* Podium-Reihenfolge: Silber (links), Gold (Mitte), Bronze (rechts) */}
                 {[1, 0, 2].map((rankIdx) => {
                   const row = ranking![rankIdx];
                   if (!row) return null;
                   const player = playerMap.get(row.playerId);
-                  const rank = rankIdx + 1;
-                  const podiumRank = rankIdx === 0 ? 2 : rankIdx === 1 ? 1 : 3;
+                  // rankIdx ist der Array-Index: 0=Platz1(Gold), 1=Platz2(Silber), 2=Platz3(Bronze)
+                  // podiumRank = der tatsächliche Rang des Spielers
+                  const podiumRank = rankIdx + 1; // 0→1(Gold), 1→2(Silber), 2→3(Bronze)
                   const heights = { 1: "pt-8", 2: "pt-4", 3: "pt-12" };
                   const colors = {
                     1: "border-yellow-400/60 bg-yellow-400/8",    // Gold
