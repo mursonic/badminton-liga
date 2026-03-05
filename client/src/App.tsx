@@ -14,6 +14,7 @@ import Matches from "./pages/Matches";
 import Statistics from "./pages/Statistics";
 import Login from "./pages/Login";
 import ChangePassword from "./pages/ChangePassword";
+import PlayerDetail from "./pages/PlayerDetail";
 import { useAuth } from "./_core/hooks/useAuth";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/ranking/pairs" component={PairRanking} />
       <Route path="/statistics" component={Statistics} />
       <Route path="/login" component={Login} />
+      <Route path="/players/:id" component={PlayerDetail} />
 
       {/* Admin-geschützte Seiten */}
       <Route path="/matches/new">

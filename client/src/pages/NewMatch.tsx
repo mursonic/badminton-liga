@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
-import { Minus, Plus, Swords } from "lucide-react";
+import { AlertCircle, Minus, Plus, Swords } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -22,6 +22,70 @@ type MatchType = "singles" | "doubles" | "mixed";
 interface SetScore {
   scoreTeam1: number;
   scoreTeam2: number;
+}
+
+// ─── Badminton-Validierung ────────────────────────────────────────────────────
+// Gültige Satzergebnisse im Badminton:
+// - Normaler Satz: Sieger hat 21 Punkte, Vorsprung mind. 2 Punkte (z.B. 21:18, 21:19)
+// - Einstand ab 20:20: Sieger hat mind. 22 Punkte, Vorsprung 2 Punkte (z.B. 22:20, 25:23)
+// - Maximalpunkt: 30 Punkte (30:29 ist das Maximum)
+// - Verlierer hat max. 29 Punkte
+// - Mindestpunkte Verlierer: 0 (kein Minimum)
+
+function validateBadmintonSet(s1: number, s2: number): string | null {
+  if (s1 === s2) return "Unentschieden ist im Badminton nicht möglich.";
+  const winner = s1 > s2 ? s1 : s2;
+  const loser = s1 > s2 ? s2 : s1;
+
+  if (winner < 21) return `Zu wenig Punkte – der Sieger braucht mind. 21 Punkte (aktuell: ${winner}).`;
+  if (winner > 30) return `Zu viele Punkte – Maximum ist 30 (aktuell: ${winner}).`;
+  if (loser > 29) return `Verlierer kann max. 29 Punkte haben (aktuell: ${loser}).`;
+
+  // Bei 21 Punkten: Vorsprung mind. 2
+  if (winner === 21 && loser >= 20) {
+    return `Bei 21:${loser} fehlt der 2-Punkte-Vorsprung. Gültig wäre z.B. 22:20.`;
+  }
+  // Bei 22–29 Punkten: Vorsprung genau 2
+  if (winner >= 22 && winner <= 29) {
+    if (winner - loser !== 2) return `Vorsprung muss genau 2 Punkte betragen (aktuell: ${winner - loser}).`;
+  }
+  // Bei 30 Punkten: Verlierer muss 29 haben
+  if (winner === 30 && loser !== 29) {
+    return `Bei 30 Punkten muss der Verlierer 29 haben (aktuell: ${loser}).`;
+  }
+  return null;
+}
+
+function validateSets(sets: SetScore[], winningSide: 1 | 2): string | null {
+  if (sets.length === 0) return "Mindestens ein Satz muss erfasst werden.";
+  if (sets.length > 3) return "Maximal 3 Sätze sind im Badminton möglich.";
+
+  for (let i = 0; i < sets.length; i++) {
+    const err = validateBadmintonSet(sets[i].scoreTeam1, sets[i].scoreTeam2);
+    if (err) return `Satz ${i + 1}: ${err}`;
+  }
+
+  // Prüfen ob die Satzanzahl zum Gewinner passt
+  const team1Sets = sets.filter(s => s.scoreTeam1 > s.scoreTeam2).length;
+  const team2Sets = sets.filter(s => s.scoreTeam2 > s.scoreTeam1).length;
+
+  if (sets.length === 1) {
+    // Nur 1 Satz: Gewinner muss diesen Satz gewonnen haben
+    const singleSetWinner = sets[0].scoreTeam1 > sets[0].scoreTeam2 ? 1 : 2;
+    if (singleSetWinner !== winningSide) return "Der ausgewählte Gewinner hat den Satz nicht gewonnen.";
+  } else if (sets.length === 2) {
+    // 2 Sätze: Gewinner muss beide gewonnen haben (2:0)
+    if (team1Sets !== 2 && team2Sets !== 2) return "Bei 2 Sätzen muss ein Team beide Sätze gewonnen haben (2:0).";
+    const setWinner = team1Sets === 2 ? 1 : 2;
+    if (setWinner !== winningSide) return "Der ausgewählte Gewinner hat nicht beide Sätze gewonnen.";
+  } else if (sets.length === 3) {
+    // 3 Sätze: Gewinner muss 2 Sätze gewonnen haben (2:1)
+    if (team1Sets !== 2 && team2Sets !== 2) return "Bei 3 Sätzen muss ein Team 2 Sätze gewonnen haben (2:1).";
+    const setWinner = team1Sets === 2 ? 1 : 2;
+    if (setWinner !== winningSide) return "Der ausgewählte Gewinner hat nicht 2 von 3 Sätzen gewonnen.";
+  }
+
+  return null;
 }
 
 export default function NewMatch() {
@@ -49,14 +113,17 @@ export default function NewMatch() {
   const [team2P1, setTeam2P1] = useState("");
   const [team2P2, setTeam2P2] = useState("");
   const [winningSide, setWinningSide] = useState<1 | 2>(1);
-  const [sets, setSets] = useState<SetScore[]>([{ scoreTeam1: 0, scoreTeam2: 0 }]);
+  const [sets, setSets] = useState<SetScore[]>([{ scoreTeam1: 21, scoreTeam2: 0 }]);
 
   const isDoubles = matchType !== "singles";
 
-  const addSet = () => setSets(prev => [...prev, { scoreTeam1: 0, scoreTeam2: 0 }]);
+  const addSet = () => {
+    if (sets.length < 3) setSets(prev => [...prev, { scoreTeam1: 21, scoreTeam2: 0 }]);
+    else toast.error("Maximal 3 Sätze sind im Badminton möglich.");
+  };
   const removeSet = (i: number) => setSets(prev => prev.filter((_, idx) => idx !== i));
   const updateSet = (i: number, field: keyof SetScore, value: number) => {
-    setSets(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: Math.max(0, value) } : s));
+    setSets(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: Math.max(0, Math.min(30, value)) } : s));
   };
 
   const getPlayerName = (id: string) => players?.find(p => p.id === parseInt(id))?.name ?? "";
@@ -71,14 +138,20 @@ export default function NewMatch() {
   const team1Sets = sets.filter(s => s.scoreTeam1 > s.scoreTeam2).length;
   const team2Sets = sets.filter(s => s.scoreTeam2 > s.scoreTeam1).length;
 
+  // Live-Validierung für jede Zeile
+  const setErrors = sets.map(s => validateBadmintonSet(s.scoreTeam1, s.scoreTeam2));
+  const overallSetError = validateSets(sets, winningSide);
+
   const handleSubmit = () => {
     if (!activeSeason) { toast.error("Keine aktive Saison. Bitte zuerst eine Saison anlegen."); return; }
     if (!team1P1 || !team2P1) { toast.error("Bitte alle Spieler auswählen."); return; }
     if (isDoubles && (!team1P2 || !team2P2)) { toast.error("Beim Doppel/Mixed müssen alle vier Spieler ausgewählt werden."); return; }
-    if (sets.length === 0) { toast.error("Mindestens ein Satz muss erfasst werden."); return; }
 
     const selectedIds = [team1P1, isDoubles ? team1P2 : null, team2P1, isDoubles ? team2P2 : null].filter(Boolean);
     if (new Set(selectedIds).size !== selectedIds.length) { toast.error("Derselbe Spieler kann nicht zweimal ausgewählt werden."); return; }
+
+    const validationError = validateSets(sets, winningSide);
+    if (validationError) { toast.error(validationError); return; }
 
     createMutation.mutate({
       seasonId: activeSeason.id,
@@ -207,53 +280,86 @@ export default function NewMatch() {
             </div>
             <Separator className="bg-border/30" />
             {sets.map((s, i) => (
-              <div key={i} className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
-                <div className="flex items-center gap-1">
-                  <button onClick={() => updateSet(i, "scoreTeam1", s.scoreTeam1 - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <Input
-                    type="number"
-                    value={s.scoreTeam1}
-                    onChange={e => updateSet(i, "scoreTeam1", parseInt(e.target.value) || 0)}
-                    className="h-9 text-center bg-input border-border/50 font-semibold text-lg"
-                    min={0}
-                  />
-                  <button onClick={() => updateSet(i, "scoreTeam1", s.scoreTeam1 + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                    <Plus className="h-3 w-3" />
+              <div key={i} className="space-y-1">
+                <div className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-center">
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => updateSet(i, "scoreTeam1", s.scoreTeam1 - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <Input
+                      type="number"
+                      value={s.scoreTeam1}
+                      onChange={e => updateSet(i, "scoreTeam1", parseInt(e.target.value) || 0)}
+                      className="h-9 text-center bg-input border-border/50 font-semibold text-lg"
+                      min={0}
+                      max={30}
+                    />
+                    <button onClick={() => updateSet(i, "scoreTeam1", s.scoreTeam1 + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <span className="text-muted-foreground font-bold text-center w-8">:</span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => updateSet(i, "scoreTeam2", s.scoreTeam2 - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <Input
+                      type="number"
+                      value={s.scoreTeam2}
+                      onChange={e => updateSet(i, "scoreTeam2", parseInt(e.target.value) || 0)}
+                      className="h-9 text-center bg-input border-border/50 font-semibold text-lg"
+                      min={0}
+                      max={30}
+                    />
+                    <button onClick={() => updateSet(i, "scoreTeam2", s.scoreTeam2 + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => removeSet(i)}
+                    disabled={sets.length === 1}
+                    className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30"
+                  >
+                    ✕
                   </button>
                 </div>
-                <span className="text-muted-foreground font-bold text-center w-8">:</span>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => updateSet(i, "scoreTeam2", s.scoreTeam2 - 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <Input
-                    type="number"
-                    value={s.scoreTeam2}
-                    onChange={e => updateSet(i, "scoreTeam2", parseInt(e.target.value) || 0)}
-                    className="h-9 text-center bg-input border-border/50 font-semibold text-lg"
-                    min={0}
-                  />
-                  <button onClick={() => updateSet(i, "scoreTeam2", s.scoreTeam2 + 1)} className="w-7 h-7 rounded-md bg-muted/50 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                    <Plus className="h-3 w-3" />
-                  </button>
-                </div>
-                <button
-                  onClick={() => removeSet(i)}
-                  disabled={sets.length === 1}
-                  className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors disabled:opacity-30"
-                >
-                  ✕
-                </button>
+                {/* Inline-Fehler pro Satz */}
+                {setErrors[i] && (
+                  <div className="flex items-center gap-1.5 text-xs text-amber-500 px-1">
+                    <AlertCircle className="h-3 w-3 shrink-0" />
+                    <span>{setErrors[i]}</span>
+                  </div>
+                )}
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={addSet} className="w-full gap-2 border-dashed border-border/50 text-muted-foreground hover:text-foreground">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addSet}
+              disabled={sets.length >= 3}
+              className="w-full gap-2 border-dashed border-border/50 text-muted-foreground hover:text-foreground disabled:opacity-40"
+            >
               <Plus className="h-3.5 w-3.5" />
-              Satz hinzufügen
+              Satz hinzufügen {sets.length >= 3 ? "(max. 3)" : ""}
             </Button>
+
+            {/* Hinweis-Box Badminton-Regeln */}
+            <div className="rounded-lg bg-muted/20 border border-border/30 p-3 text-xs text-muted-foreground space-y-1">
+              <p className="font-medium text-foreground/70">Gültige Badminton-Ergebnisse:</p>
+              <p>• Sieger braucht mind. 21 Punkte mit ≥ 2 Punkte Vorsprung</p>
+              <p>• Ab 20:20 (Einstand): Sieger braucht 2 Punkte Vorsprung (z.B. 22:20)</p>
+              <p>• Maximum: 30:29 · Max. 3 Sätze (Best of 3)</p>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Gesamt-Validierungsfehler */}
+        {overallSetError && (
+          <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>{overallSetError}</span>
+          </div>
+        )}
 
         {/* Submit */}
         <div className="flex gap-3">
@@ -262,7 +368,7 @@ export default function NewMatch() {
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={createMutation.isPending || !activeSeason}
+            disabled={createMutation.isPending || !activeSeason || !!overallSetError}
             className="flex-1 gap-2"
           >
             <Swords className="h-4 w-4" />

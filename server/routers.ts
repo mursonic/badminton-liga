@@ -10,6 +10,8 @@ import {
   createMatch,
   createPlayer,
   createSeason,
+  closeSeason,
+  reopenSeason,
   deleteMatch,
   deletePlayer,
   deleteSeason,
@@ -22,6 +24,7 @@ import {
   getMatchById,
   getMatchesBySeason,
   getMatchCountForPlayer,
+  getPlayerMatches,
   getSetsByMatch,
   computePairRanking,
   computePlayerRanking,
@@ -164,6 +167,21 @@ export const appRouter = router({
     delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => { await deleteSeason(input.id); return { success: true }; }),
+
+    close: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => { await closeSeason(input.id); return { success: true }; }),
+
+    reopen: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => { await reopenSeason(input.id); return { success: true }; }),
+  }),
+
+  // ─── Player Detail ───────────────────────────────────────────────────────────
+  playerDetail: router({
+    getMatches: publicProcedure
+      .input(z.object({ playerId: z.number(), seasonId: z.number().nullable().optional() }))
+      .query(({ input }) => getPlayerMatches(input.playerId, input.seasonId ?? null)),
   }),
 
   // ─── Matches ───────────────────────────────────────────────────────────────

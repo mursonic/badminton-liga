@@ -82,3 +82,11 @@
 - [x] DB: match_sets.matchId -> match_id umbenennen (snake_case Konsistenz)
 - [x] DB: matches.seasonId -> season_id umbenennen (snake_case Konsistenz)
 - [x] Code: deletePlayer ohne Cascade auf matches absichern (Fehlermeldung bei Spieler mit Spielen)
+
+## Neue Features (Runde 3)
+- [x] Spieler-Detailseite: Profil, Spielhistorie, Statistiken, Head-to-Head
+- [x] Backend: getPlayerDetail-Endpunkt (Matches, Wins, Losses, Ratio, Gegner)
+- [x] Saison-Abschluss: Saison als "abgeschlossen" markieren (editierbar/wiederöffenbar)
+- [x] Backend: seasons.close / seasons.reopen Prozeduren
+- [x] Badminton-Validierung beim Spiel erfassen: gültige Satzergebnisse (21/30 Punkte, Einstand, Satzanzahl)
+- [x] Responsive Ranglisten-Tabellen: mobile Ansicht für Einzelrangliste und Paarungsrangliste

@@ -120,6 +120,16 @@ export async function setActiveSeason(id: number) {
   await db.update(seasons).set({ isActive: true }).where(eq(seasons.id, id));
 }
 
+export async function closeSeason(id: number) {
+  const db = getDb();
+  await db.update(seasons).set({ isClosed: true, isActive: false }).where(eq(seasons.id, id));
+}
+
+export async function reopenSeason(id: number) {
+  const db = getDb();
+  await db.update(seasons).set({ isClosed: false }).where(eq(seasons.id, id));
+}
+
 // ─── Matches ─────────────────────────────────────────────────────────────────
 
 export async function getMatchesBySeason(seasonId: number) {
@@ -204,6 +214,61 @@ export async function updateMatchSets(matchId: number, sets: Omit<InsertMatchSet
       sql`INSERT INTO match_sets (match_id, set_number, score_team1, score_team2) VALUES (${s.matchId}, ${s.setNumber}, ${s.scoreTeam1}, ${s.scoreTeam2})`
     );
   }
+}
+
+// ─── Player Detail ───────────────────────────────────────────────────────────
+
+export type PlayerDetailMatch = {
+  matchId: number;
+  type: string;
+  opponent1Id: number;
+  opponent2Id: number | null;
+  partner1Id: number | null;
+  partner2Id: number | null;
+  winningSide: number;
+  playerSide: number;
+  scoreTeam1: number;
+  scoreTeam2: number;
+  playedAt: number;
+  seasonId: number;
+};
+
+export async function getPlayerMatches(playerId: number, seasonId?: number | null): Promise<PlayerDetailMatch[]> {
+  const db = getDb();
+  const allMatches = seasonId
+    ? await db.select().from(matches).where(and(eq(matches.seasonId, seasonId), or(eq(matches.player1Id, playerId), eq(matches.player2Id, playerId), eq(matches.player3Id, playerId), eq(matches.player4Id, playerId))))
+    : await db.select().from(matches).where(or(eq(matches.player1Id, playerId), eq(matches.player2Id, playerId), eq(matches.player3Id, playerId), eq(matches.player4Id, playerId)));
+
+  if (allMatches.length === 0) return [];
+  const matchIds = allMatches.map(m => m.id);
+  const allSets = await getSetsByMatches(matchIds);
+  const setsByMatch = new Map<number, typeof allSets>();
+  for (const s of allSets) {
+    if (!setsByMatch.has(s.matchId)) setsByMatch.set(s.matchId, []);
+    setsByMatch.get(s.matchId)!.push(s);
+  }
+
+  return allMatches.map(m => {
+    const isTeam1 = m.player1Id === playerId || m.player2Id === playerId;
+    const playerSide = isTeam1 ? 1 : 2;
+    const sets = setsByMatch.get(m.id) ?? [];
+    const scoreTeam1 = sets.reduce((a, s) => a + s.scoreTeam1, 0);
+    const scoreTeam2 = sets.reduce((a, s) => a + s.scoreTeam2, 0);
+    return {
+      matchId: m.id,
+      type: m.type,
+      opponent1Id: isTeam1 ? m.player3Id : m.player1Id,
+      opponent2Id: isTeam1 ? (m.player4Id ?? null) : (m.player2Id ?? null),
+      partner1Id: isTeam1 ? (m.player2Id === playerId ? null : (m.player2Id ?? null)) : (m.player4Id === playerId ? null : (m.player4Id ?? null)),
+      partner2Id: null,
+      winningSide: m.winningSide,
+      playerSide,
+      scoreTeam1,
+      scoreTeam2,
+      playedAt: m.playedAt ?? m.createdAt,
+      seasonId: m.seasonId,
+    };
+  }).sort((a, b) => b.playedAt - a.playedAt);
 }
 
 // ─── Rankings ─────────────────────────────────────────────────────────────────

@@ -15,6 +15,13 @@
       "when": 1772720876936,
       "tag": "0001_luxuriant_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772722854263,
+      "tag": "0002_bitter_morlun",
+      "breakpoints": true
     }
   ]
 }

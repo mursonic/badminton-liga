@@ -34,7 +34,7 @@ export default function PairRanking() {
     return `${p1} & ${p2}`;
   };
 
-  const typeLabel = { doubles: "Doppel", mixed: "Mixed" };
+  const typeLabel: Record<string, string> = { doubles: "Doppel", mixed: "Mixed" };
 
   return (
     <DashboardLayout>
@@ -46,7 +46,7 @@ export default function PairRanking() {
             </h1>
             <p className="text-muted-foreground mt-1">Erfolgreichste Doppel- und Mixed-Paarungen</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Select value={matchTypeFilter} onValueChange={setMatchTypeFilter}>
               <SelectTrigger className="w-36 bg-input border-border/50">
                 <SelectValue />
@@ -88,8 +88,9 @@ export default function PairRanking() {
                 Paarungen ({ranking?.length ?? 0})
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-x-4 gap-y-0 items-center text-xs text-muted-foreground uppercase tracking-wider pb-2 border-b border-border/30 px-2">
+            <CardContent className="px-0 sm:px-6">
+              {/* Desktop Header */}
+              <div className="hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-x-4 items-center text-xs text-muted-foreground uppercase tracking-wider pb-2 border-b border-border/30 px-2">
                 <span className="w-8 text-center">#</span>
                 <span>Paarung</span>
                 <span className="w-16 text-center">Modus</span>
@@ -98,24 +99,52 @@ export default function PairRanking() {
                 <span className="w-16 text-center">Punkte</span>
                 <span className="w-16 text-center">Ratio</span>
               </div>
+              {/* Mobile Header */}
+              <div className="sm:hidden grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center text-xs text-muted-foreground uppercase tracking-wider pb-2 border-b border-border/30 px-3">
+                <span className="w-7 text-center">#</span>
+                <span>Paarung</span>
+                <span className="text-center w-12">S/N</span>
+                <span className="text-center w-14">Punkte</span>
+              </div>
               <div className="divide-y divide-border/20">
                 {ranking?.map((row, i) => {
                   const isTop3 = i < 3;
+                  const name = pairName(row.player1Id, row.player2Id);
                   return (
-                    <div key={`${row.player1Id}-${row.player2Id}-${row.matchType}`} className={`grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-x-4 items-center py-3 px-2 rounded-lg transition-colors hover:bg-muted/10 ${isTop3 ? "bg-primary/3" : ""}`}>
-                      <RankNumber rank={i + 1} />
-                      <div className="min-w-0">
-                        <p className={`font-medium truncate ${isTop3 ? "text-foreground" : "text-foreground/80"}`}>
-                          {pairName(row.player1Id, row.player2Id)}
-                        </p>
+                    <div key={`${row.player1Id}-${row.player2Id}-${row.matchType}`}>
+                      {/* Desktop Row */}
+                      <div className={`hidden sm:grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] gap-x-4 items-center py-3 px-2 rounded-lg transition-colors hover:bg-muted/10 ${isTop3 ? "bg-primary/3" : ""}`}>
+                        <RankNumber rank={i + 1} />
+                        <div className="min-w-0">
+                          <p className={`font-medium truncate ${isTop3 ? "text-foreground" : "text-foreground/80"}`}>
+                            {name}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className={`w-16 justify-center text-xs border-border/50 ${row.matchType === "mixed" ? "text-purple-400 border-purple-500/20" : "text-blue-400 border-blue-500/20"}`}>
+                          {typeLabel[row.matchType]}
+                        </Badge>
+                        <span className="text-center w-12 text-sm text-muted-foreground">{row.gamesPlayed}</span>
+                        <span className="text-center w-10 text-sm text-muted-foreground">{row.wins}/{row.losses}</span>
+                        <span className={`text-center w-16 font-bold text-sm ${isTop3 ? "text-primary" : "text-foreground"}`}>{row.points}</span>
+                        <span className="text-center w-16 text-xs text-muted-foreground">{ratio(row.pointsFor, row.pointsAgainst)}</span>
                       </div>
-                      <Badge variant="outline" className={`w-16 justify-center text-xs border-border/50 ${row.matchType === "mixed" ? "text-purple-400 border-purple-500/20" : "text-blue-400 border-blue-500/20"}`}>
-                        {typeLabel[row.matchType]}
-                      </Badge>
-                      <span className="text-center w-12 text-sm text-muted-foreground">{row.gamesPlayed}</span>
-                      <span className="text-center w-10 text-sm text-muted-foreground">{row.wins}/{row.losses}</span>
-                      <span className={`text-center w-16 font-bold text-sm ${isTop3 ? "text-primary" : "text-foreground"}`}>{row.points}</span>
-                      <span className="text-center w-16 text-xs text-muted-foreground">{ratio(row.pointsFor, row.pointsAgainst)}</span>
+                      {/* Mobile Row */}
+                      <div className={`sm:hidden grid grid-cols-[auto_1fr_auto_auto] gap-x-3 items-center py-3 px-3 ${isTop3 ? "bg-primary/3" : ""}`}>
+                        <RankNumber rank={i + 1} small />
+                        <div className="min-w-0">
+                          <p className={`font-medium text-sm truncate ${isTop3 ? "text-foreground" : "text-foreground/80"}`}>
+                            {name}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <Badge variant="outline" className={`text-xs px-1.5 py-0 h-4 border-border/40 ${row.matchType === "mixed" ? "text-purple-400 border-purple-500/20" : "text-blue-400 border-blue-500/20"}`}>
+                              {typeLabel[row.matchType]}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{row.gamesPlayed} Sp. · {ratio(row.pointsFor, row.pointsAgainst)}</span>
+                          </div>
+                        </div>
+                        <span className="text-center w-12 text-xs text-muted-foreground">{row.wins}/{row.losses}</span>
+                        <span className={`text-center w-14 font-bold text-sm ${isTop3 ? "text-primary" : "text-foreground"}`}>{row.points}</span>
+                      </div>
                     </div>
                   );
                 })}
@@ -132,9 +161,9 @@ export default function PairRanking() {
   );
 }
 
-function RankNumber({ rank }: { rank: number }) {
+function RankNumber({ rank, small }: { rank: number; small?: boolean }) {
+  const size = small ? "w-7 h-7 text-xs" : "w-8 h-8 text-xs";
   if (rank <= 3) {
-    // Gold: #FFD700  Silber: #C0C0C0  Bronze: #CD7F32
     const colorStyle: Record<number, React.CSSProperties> = {
       1: { color: "#FFD700", borderColor: "rgba(255,215,0,0.4)", backgroundColor: "rgba(255,215,0,0.1)" },
       2: { color: "#C0C0C0", borderColor: "rgba(192,192,192,0.4)", backgroundColor: "rgba(192,192,192,0.1)" },
@@ -142,12 +171,12 @@ function RankNumber({ rank }: { rank: number }) {
     };
     return (
       <div
-        className="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold shrink-0"
+        className={`${size} rounded-full border flex items-center justify-center font-bold shrink-0`}
         style={colorStyle[rank]}
       >
         {rank}
       </div>
     );
   }
-  return <span className="w-8 text-center text-sm text-muted-foreground font-medium">{rank}</span>;
+  return <span className={`${small ? "w-7" : "w-8"} text-center text-sm text-muted-foreground font-medium shrink-0`}>{rank}</span>;
 }

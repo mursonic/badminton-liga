@@ -1,0 +1,1 @@
+ALTER TABLE `seasons` ADD `is_closed` boolean DEFAULT false NOT NULL;

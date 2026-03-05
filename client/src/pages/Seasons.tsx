@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
-import { CalendarDays, CheckCircle2, Pencil, PlusCircle, Trash2 } from "lucide-react";
+import { CalendarDays, CheckCircle2, Lock, LockOpen, Pencil, PlusCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ interface Season {
   year: number;
   name: string;
   isActive: boolean;
+  isClosed: boolean;
 }
 
 type DialogMode = "create" | "edit";
@@ -64,6 +65,24 @@ export default function Seasons() {
       utils.seasons.list.invalidate();
       utils.seasons.active.invalidate();
       toast.success("Aktive Saison geändert.");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const closeMutation = trpc.seasons.close.useMutation({
+    onSuccess: () => {
+      utils.seasons.list.invalidate();
+      utils.seasons.active.invalidate();
+      toast.success("Saison abgeschlossen.");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const reopenMutation = trpc.seasons.reopen.useMutation({
+    onSuccess: () => {
+      utils.seasons.list.invalidate();
+      utils.seasons.active.invalidate();
+      toast.success("Saison wieder geöffnet.");
     },
     onError: (e) => toast.error(e.message),
   });
@@ -166,22 +185,59 @@ export default function Seasons() {
                       <p className="text-xs text-muted-foreground">Jahr {s.year}</p>
                     </div>
 
-                    {s.isActive ? (
-                      <Badge className="gap-1 bg-primary/10 text-primary border-primary/20 shrink-0">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Aktiv
-                      </Badge>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs border-border/50 shrink-0"
-                        onClick={() => setActiveMutation.mutate({ id: s.id })}
-                        disabled={setActiveMutation.isPending}
-                      >
-                        Aktivieren
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                      {s.isClosed ? (
+                        <Badge variant="outline" className="gap-1 border-amber-500/30 text-amber-500 text-xs">
+                          <Lock className="h-3 w-3" />
+                          Abgeschlossen
+                        </Badge>
+                      ) : s.isActive ? (
+                        <Badge className="gap-1 bg-primary/10 text-primary border-primary/20">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Aktiv
+                        </Badge>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs border-border/50"
+                          onClick={() => setActiveMutation.mutate({ id: s.id })}
+                          disabled={setActiveMutation.isPending}
+                        >
+                          Aktivieren
+                        </Button>
+                      )}
+
+                      {s.isClosed ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-muted-foreground hover:text-foreground gap-1 h-7 px-2"
+                          onClick={() => reopenMutation.mutate({ id: s.id })}
+                          disabled={reopenMutation.isPending}
+                          title="Saison wieder öffnen"
+                        >
+                          <LockOpen className="h-3.5 w-3.5" />
+                          Öffnen
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-amber-500 hover:text-amber-400 gap-1 h-7 px-2"
+                          onClick={() => {
+                            if (confirm(`Saison "${s.name}" wirklich abschließen? Sie wird als inaktiv markiert und kann später wieder geöffnet werden.`)) {
+                              closeMutation.mutate({ id: s.id });
+                            }
+                          }}
+                          disabled={closeMutation.isPending}
+                          title="Saison abschließen"
+                        >
+                          <Lock className="h-3.5 w-3.5" />
+                          Abschließen
+                        </Button>
+                      )}
+                    </div>
 
                     <div className="flex gap-1 shrink-0">
                       <Button

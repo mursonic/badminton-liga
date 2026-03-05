@@ -29,6 +29,7 @@ export const seasons = mysqlTable("seasons", {
   year: int("year").notNull(),
   name: varchar("name", { length: 64 }).notNull(),
   isActive: boolean("is_active").default(false).notNull(),
+  isClosed: boolean("is_closed").default(false).notNull(),
   createdAt: bigint("created_at", { mode: "number" }).notNull(),
 });
 

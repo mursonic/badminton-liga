@@ -137,3 +137,70 @@ describe("Admin-Zugriff", () => {
     ).rejects.toThrow();
   });
 });
+
+// ─── Badminton-Validierung Tests ──────────────────────────────────────────────
+
+function validateBadmintonSet(s1: number, s2: number): string | null {
+  if (s1 === s2) return "Unentschieden ist im Badminton nicht möglich.";
+  const winner = s1 > s2 ? s1 : s2;
+  const loser = s1 > s2 ? s2 : s1;
+  if (winner < 21) return `Zu wenig Punkte – der Sieger braucht mind. 21 Punkte (aktuell: ${winner}).`;
+  if (winner > 30) return `Zu viele Punkte – Maximum ist 30 (aktuell: ${winner}).`;
+  if (loser > 29) return `Verlierer kann max. 29 Punkte haben (aktuell: ${loser}).`;
+  if (winner === 21 && loser >= 20) return `Bei 21:${loser} fehlt der 2-Punkte-Vorsprung. Gültig wäre z.B. 22:20.`;
+  if (winner >= 22 && winner <= 29 && winner - loser !== 2) return `Vorsprung muss genau 2 Punkte betragen (aktuell: ${winner - loser}).`;
+  if (winner === 30 && loser !== 29) return `Bei 30 Punkten muss der Verlierer 29 haben (aktuell: ${loser}).`;
+  return null;
+}
+
+describe("Badminton-Validierung", () => {
+  it("gültige Satzergebnisse werden akzeptiert", () => {
+    expect(validateBadmintonSet(21, 15)).toBeNull();
+    expect(validateBadmintonSet(21, 0)).toBeNull();
+    expect(validateBadmintonSet(22, 20)).toBeNull();
+    expect(validateBadmintonSet(25, 23)).toBeNull();
+    expect(validateBadmintonSet(30, 29)).toBeNull();
+    expect(validateBadmintonSet(15, 21)).toBeNull();
+  });
+
+  it("Unentschieden wird abgelehnt", () => {
+    expect(validateBadmintonSet(21, 21)).not.toBeNull();
+    expect(validateBadmintonSet(0, 0)).not.toBeNull();
+  });
+
+  it("zu wenig Punkte wird abgelehnt", () => {
+    expect(validateBadmintonSet(20, 15)).not.toBeNull();
+    expect(validateBadmintonSet(10, 5)).not.toBeNull();
+  });
+
+  it("zu viele Punkte wird abgelehnt", () => {
+    expect(validateBadmintonSet(31, 29)).not.toBeNull();
+  });
+
+  it("Einstand ohne 2-Punkte-Vorsprung wird abgelehnt", () => {
+    expect(validateBadmintonSet(21, 20)).not.toBeNull(); // kein 2er-Vorsprung
+    expect(validateBadmintonSet(23, 20)).not.toBeNull(); // 3er-Vorsprung ungültig
+  });
+
+  it("30:29 ist gültig, 30:28 nicht", () => {
+    expect(validateBadmintonSet(30, 29)).toBeNull();
+    expect(validateBadmintonSet(30, 28)).not.toBeNull();
+  });
+});
+
+describe("Saison-Status", () => {
+  it("Admin kann Saison abschließen (Prozedur existiert)", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    // Prüfen ob die Prozedur vorhanden ist (ohne echte DB)
+    expect(typeof caller.seasons.close).toBe("function");
+    expect(typeof caller.seasons.reopen).toBe("function");
+  });
+
+  it("Nicht-Admin kann Saison nicht abschließen", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.seasons.close({ id: 1 })).rejects.toThrow();
+    await expect(caller.seasons.reopen({ id: 1 })).rejects.toThrow();
+  });
+});
