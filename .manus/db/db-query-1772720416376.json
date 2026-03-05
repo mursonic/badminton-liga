@@ -1,0 +1,30 @@
+{
+  "query": "\nSELECT 'admin_users' as tbl, COUNT(*) as cnt FROM admin_users\nUNION ALL SELECT 'players', COUNT(*) FROM players\nUNION ALL SELECT 'seasons', COUNT(*) FROM seasons\nUNION ALL SELECT 'matches', COUNT(*) FROM matches\nUNION ALL SELECT 'match_sets', COUNT(*) FROM match_sets;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \nSELECT 'admin_users' as tbl, COUNT(*) as cnt FROM admin_users\nUNION ALL SELECT 'players', COUNT(*) FROM players\nUNION ALL SELECT 'seasons', COUNT(*) FROM seasons\nUNION ALL SELECT 'matches', COUNT(*) FROM matches\nUNION ALL SELECT 'match_sets', COUNT(*) FROM match_sets;\n",
+  "rows": [
+    {
+      "tbl": "match_sets",
+      "cnt": "1"
+    },
+    {
+      "tbl": "admin_users",
+      "cnt": "1"
+    },
+    {
+      "tbl": "seasons",
+      "cnt": "1"
+    },
+    {
+      "tbl": "matches",
+      "cnt": "1"
+    },
+    {
+      "tbl": "players",
+      "cnt": "8"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\nmatch_sets\t1\nadmin_users\t1\nseasons\t1\nmatches\t1\nplayers\t8\n",
+  "stderr": "",
+  "execution_time_ms": 116
+}

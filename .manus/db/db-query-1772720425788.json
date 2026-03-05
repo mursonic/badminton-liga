@@ -1,0 +1,90 @@
+{
+  "query": "\nSELECT * FROM players ORDER BY name;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \nSELECT * FROM players ORDER BY name;\n",
+  "rows": [
+    {
+      "id": "90001",
+      "name": "Alex",
+      "nickname": "NULL",
+      "gender": "male",
+      "active": "1",
+      "createdAt": "2026-03-04 18:52:54",
+      "updatedAt": "2026-03-04 18:52:54",
+      "created_at": "1772650374425"
+    },
+    {
+      "id": "120004",
+      "name": "Björn",
+      "nickname": "NULL",
+      "gender": "male",
+      "active": "1",
+      "createdAt": "2026-03-04 21:35:51",
+      "updatedAt": "2026-03-04 21:35:51",
+      "created_at": "1772660151213"
+    },
+    {
+      "id": "120003",
+      "name": "Christian",
+      "nickname": "NULL",
+      "gender": "male",
+      "active": "1",
+      "createdAt": "2026-03-04 21:35:36",
+      "updatedAt": "2026-03-04 21:35:36",
+      "created_at": "1772660136773"
+    },
+    {
+      "id": "30006",
+      "name": "Daniel",
+      "nickname": "NULL",
+      "gender": "male",
+      "active": "1",
+      "createdAt": "2026-03-03 14:23:33",
+      "updatedAt": "2026-03-04 18:52:26",
+      "created_at": "1772547813005"
+    },
+    {
+      "id": "30004",
+      "name": "Dirk",
+      "nickname": "NULL",
+      "gender": "male",
+      "active": "1",
+      "createdAt": "2026-03-03 14:23:03",
+      "updatedAt": "2026-03-04 18:52:12",
+      "created_at": "1772547783793"
+    },
+    {
+      "id": "30003",
+      "name": "Jan-Niklas",
+      "nickname": "NULL",
+      "gender": "male",
+      "active": "1",
+      "createdAt": "2026-03-03 14:22:57",
+      "updatedAt": "2026-03-04 21:34:36",
+      "created_at": "1772547777411"
+    },
+    {
+      "id": "120002",
+      "name": "Jonathan",
+      "nickname": "NULL",
+      "gender": "male",
+      "active": "1",
+      "createdAt": "2026-03-04 21:35:27",
+      "updatedAt": "2026-03-04 21:35:27",
+      "created_at": "1772660127223"
+    },
+    {
+      "id": "120001",
+      "name": "Steffi",
+      "nickname": "NULL",
+      "gender": "female",
+      "active": "1",
+      "createdAt": "2026-03-04 21:35:02",
+      "updatedAt": "2026-03-04 21:35:09",
+      "created_at": "1772660102329"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tnickname\tgender\tactive\tcreatedAt\tupdatedAt\tcreated_at\n90001\tAlex\tNULL\tmale\t1\t2026-03-04 18:52:54\t2026-03-04 18:52:54\t1772650374425\n120004\tBjörn\tNULL\tmale\t1\t2026-03-04 21:35:51\t2026-03-04 21:35:51\t1772660151213\n120003\tChristian\tNULL\tmale\t1\t2026-03-04 21:35:36\t2026-03-04 21:35:36\t1772660136773\n30006\tDaniel\tNULL\tmale\t1\t2026-03-03 14:23:33\t2026-03-04 18:52:26\t1772547813005\n30004\tDirk\tNULL\tmale\t1\t2026-03-03 14:23:03\t2026-03-04 18:52:12\t1772547783793\n30003\tJan-Niklas\tNULL\tmale\t1\t2026-03-03 14:22:57\t2026-03-04 21:34:36\t1772547777411\n120002\tJonathan\tNULL\tmale\t1\t2026-03-04 21:35:27\t2026-03-04 21:35:27\t1772660127223\n120001\tSteffi\tNULL\tfemale\t1\t2026-03-04 21:35:02\t2026-03-04 21:35:09\t1772660102329\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

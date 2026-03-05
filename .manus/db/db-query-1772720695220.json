@@ -1,0 +1,9 @@
+{
+  "query": "\n-- matches: Spalten die nullable waren auf NOT NULL setzen (Daten sind sauber)\nALTER TABLE matches\n  MODIFY COLUMN type enum('singles','doubles','mixed') NOT NULL,\n  MODIFY COLUMN player1_id int NOT NULL,\n  MODIFY COLUMN player3_id int NOT NULL,\n  MODIFY COLUMN winning_side int NOT NULL;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \n-- matches: Spalten die nullable waren auf NOT NULL setzen (Daten sind sauber)\nALTER TABLE matches\n  MODIFY COLUMN type enum('singles','doubles','mixed') NOT NULL,\n  MODIFY COLUMN player1_id int NOT NULL,\n  MODIFY COLUMN player3_id int NOT NULL,\n  MODIFY COLUMN winning_side int NOT NULL;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 462
+}

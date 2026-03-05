@@ -75,3 +75,10 @@
 - [x] Podium-Treppchen: Gold (Mitte) höchste Karte, Silber zweithöchst, Bronze am niedrigsten
 - [x] Footer einbauen: "Vibecoded in Hamburg with <3. Tool: Manus. GitHub." mit Ref-Link und GitHub-Repo
 - [x] GitHub README.md erstellen: Feature-Beschreibung, Screenshots, Installationsanleitung, Manus-Ref-Link
+
+## Konsistenz-Prüfung
+- [x] DB-Bereinigung: Veraltete Spalten aus matches entfernen (matchType, team1Player1Id, winner etc.)
+- [x] DB-Bereinigung: Veraltete Spalten aus match_sets entfernen (team1Score, team2Score)
+- [x] DB: match_sets.matchId -> match_id umbenennen (snake_case Konsistenz)
+- [x] DB: matches.seasonId -> season_id umbenennen (snake_case Konsistenz)
+- [x] Code: deletePlayer ohne Cascade auf matches absichern (Fehlermeldung bei Spieler mit Spielen)

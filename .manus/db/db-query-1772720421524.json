@@ -1,0 +1,19 @@
+{
+  "query": "\nSELECT * FROM seasons ORDER BY year;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \nSELECT * FROM seasons ORDER BY year;\n",
+  "rows": [
+    {
+      "id": "30001",
+      "year": "2026",
+      "name": "Saison 2026",
+      "isActive": "0",
+      "createdAt": "2026-03-03 14:22:49",
+      "is_active": "1",
+      "created_at": "1772547769282"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tyear\tname\tisActive\tcreatedAt\tis_active\tcreated_at\n30001\t2026\tSaison 2026\t0\t2026-03-03 14:22:49\t1\t1772547769282\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

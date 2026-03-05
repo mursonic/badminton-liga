@@ -1,0 +1,22 @@
+{
+  "query": "\nSELECT m.id, m.type, m.seasonId, m.player1_id, m.player2_id, m.player3_id, m.player4_id, m.winning_side, m.played_at, m.new_created_at FROM matches m ORDER BY m.id;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \nSELECT m.id, m.type, m.seasonId, m.player1_id, m.player2_id, m.player3_id, m.player4_id, m.winning_side, m.played_at, m.new_created_at FROM matches m ORDER BY m.id;\n",
+  "rows": [
+    {
+      "id": "60001",
+      "type": "doubles",
+      "seasonId": "30001",
+      "player1_id": "30004",
+      "player2_id": "30003",
+      "player3_id": "90001",
+      "player4_id": "30006",
+      "winning_side": "1",
+      "played_at": "1772650415442",
+      "new_created_at": "1772650415442"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttype\tseasonId\tplayer1_id\tplayer2_id\tplayer3_id\tplayer4_id\twinning_side\tplayed_at\tnew_created_at\n60001\tdoubles\t30001\t30004\t30003\t90001\t30006\t1\t1772650415442\t1772650415442\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

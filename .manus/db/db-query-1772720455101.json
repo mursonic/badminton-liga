@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Matches mit ungültigen player1_id oder player3_id\nSELECT m.id, m.type, m.player1_id, m.player3_id\nFROM matches m\nWHERE NOT EXISTS (SELECT 1 FROM players p WHERE p.id = m.player1_id)\n   OR NOT EXISTS (SELECT 1 FROM players p WHERE p.id = m.player3_id);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \n-- Matches mit ungültigen player1_id oder player3_id\nSELECT m.id, m.type, m.player1_id, m.player3_id\nFROM matches m\nWHERE NOT EXISTS (SELECT 1 FROM players p WHERE p.id = m.player1_id)\n   OR NOT EXISTS (SELECT 1 FROM players p WHERE p.id = m.player3_id);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 64
+}

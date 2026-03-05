@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Veraltete Spalten aus match_sets entfernen\nALTER TABLE match_sets\n  DROP COLUMN IF EXISTS team1Score,\n  DROP COLUMN IF EXISTS team2Score;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \n-- Veraltete Spalten aus match_sets entfernen\nALTER TABLE match_sets\n  DROP COLUMN IF EXISTS team1Score,\n  DROP COLUMN IF EXISTS team2Score;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 500
+}

@@ -1,0 +1,13 @@
+{
+  "query": "\n-- Matches mit ungültiger seasonId\nSELECT m.id, m.type, m.seasonId FROM matches m\nWHERE NOT EXISTS (SELECT 1 FROM seasons s WHERE s.id = m.seasonId);\n\n-- Doppel/Mixed-Matches ohne player2_id oder player4_id\nSELECT m.id, m.type, m.player2_id, m.player4_id FROM matches m\nWHERE m.type IN ('doubles', 'mixed') AND (m.player2_id IS NULL OR m.player4_id IS NULL);\n\n-- Mehrere aktive Saisons (sollte max. 1 geben)\nSELECT COUNT(*) as active_count FROM seasons WHERE is_active = 1;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \n-- Matches mit ungültiger seasonId\nSELECT m.id, m.type, m.seasonId FROM matches m\nWHERE NOT EXISTS (SELECT 1 FROM seasons s WHERE s.id = m.seasonId);\n\n-- Doppel/Mixed-Matches ohne player2_id oder player4_id\nSELECT m.id, m.type, m.player2_id, m.player4_id FROM matches m\nWHERE m.type IN ('doubles', 'mixed') AND (m.player2_id IS NULL OR m.player4_id IS NULL);\n\n-- Mehrere aktive Saisons (sollte max. 1 geben)\nSELECT COUNT(*) as active_count FROM seasons WHERE is_active = 1;\n",
+  "rows": [
+    {
+      "active_count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "active_count\n1\n",
+  "stderr": "",
+  "execution_time_ms": 74
+}

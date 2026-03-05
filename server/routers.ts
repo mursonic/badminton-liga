@@ -21,6 +21,7 @@ import {
   getAllSeasons,
   getMatchById,
   getMatchesBySeason,
+  getMatchCountForPlayer,
   getSetsByMatch,
   computePairRanking,
   computePlayerRanking,
@@ -131,7 +132,16 @@ export const appRouter = router({
 
     delete: adminProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(({ input }) => deletePlayer(input.id)),
+      .mutation(async ({ input }) => {
+        const matchCount = await getMatchCountForPlayer(input.id);
+        if (matchCount > 0) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `Spieler kann nicht gelöscht werden – es existieren noch ${matchCount} Spiel(e) mit diesem Spieler. Bitte zuerst die Spiele löschen.`,
+          });
+        }
+        return deletePlayer(input.id);
+      }),
   }),
 
   // ─── Seasons ───────────────────────────────────────────────────────────────

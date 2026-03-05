@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Verwaiste match_sets (kein zugehöriges match)\nSELECT ms.id, ms.matchId FROM match_sets ms\nLEFT JOIN matches m ON ms.matchId = m.id\nWHERE m.id IS NULL;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \n-- Verwaiste match_sets (kein zugehöriges match)\nSELECT ms.id, ms.matchId FROM match_sets ms\nLEFT JOIN matches m ON ms.matchId = m.id\nWHERE m.id IS NULL;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 55
+}

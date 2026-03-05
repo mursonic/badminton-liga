@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Veraltete Spalten aus matches entfernen\nALTER TABLE matches\n  DROP COLUMN IF EXISTS matchType,\n  DROP COLUMN IF EXISTS team1Player1Id,\n  DROP COLUMN IF EXISTS team1Player2Id,\n  DROP COLUMN IF EXISTS team2Player1Id,\n  DROP COLUMN IF EXISTS team2Player2Id,\n  DROP COLUMN IF EXISTS winner,\n  DROP COLUMN IF EXISTS team1TotalPoints,\n  DROP COLUMN IF EXISTS team2TotalPoints,\n  DROP COLUMN IF EXISTS team1Sets,\n  DROP COLUMN IF EXISTS team2Sets,\n  DROP COLUMN IF EXISTS notes;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4VV9hs12VfT9FeV.5ed570eaad72 --database h7akdMQBXfjVMZA72Nx9AF --execute \n-- Veraltete Spalten aus matches entfernen\nALTER TABLE matches\n  DROP COLUMN IF EXISTS matchType,\n  DROP COLUMN IF EXISTS team1Player1Id,\n  DROP COLUMN IF EXISTS team1Player2Id,\n  DROP COLUMN IF EXISTS team2Player1Id,\n  DROP COLUMN IF EXISTS team2Player2Id,\n  DROP COLUMN IF EXISTS winner,\n  DROP COLUMN IF EXISTS team1TotalPoints,\n  DROP COLUMN IF EXISTS team2TotalPoints,\n  DROP COLUMN IF EXISTS team1Sets,\n  DROP COLUMN IF EXISTS team2Sets,\n  DROP COLUMN IF EXISTS notes;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2184
+}

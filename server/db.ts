@@ -1,4 +1,4 @@
-import { eq, and, inArray, sql } from "drizzle-orm";
+import { eq, and, inArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   adminUsers,
@@ -69,6 +69,15 @@ export async function createPlayer(data: Omit<InsertPlayer, "id" | "createdAt">)
 export async function updatePlayer(id: number, data: Partial<Omit<InsertPlayer, "id" | "createdAt">>) {
   const db = getDb();
   await db.update(players).set(data).where(eq(players.id, id));
+}
+
+export async function getMatchCountForPlayer(playerId: number): Promise<number> {
+  const db = getDb();
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(matches)
+    .where(or(eq(matches.player1Id, playerId), eq(matches.player2Id, playerId), eq(matches.player3Id, playerId), eq(matches.player4Id, playerId)));
+  return Number(result[0]?.count ?? 0);
 }
 
 export async function deletePlayer(id: number) {
@@ -179,20 +188,20 @@ export async function getSetsByMatches(matchIds: number[]) {
 export async function createMatchSets(sets: Omit<InsertMatchSet, "id">[]) {
   if (sets.length === 0) return;
   const db = getDb();
-  // Use raw SQL to avoid Drizzle camelCase column mapping issues with 'matchId'
+  // Use raw SQL for explicit column names (match_id, set_number)
   for (const s of sets) {
     await db.execute(
-      sql`INSERT INTO match_sets (matchId, setNumber, score_team1, score_team2) VALUES (${s.matchId}, ${s.setNumber}, ${s.scoreTeam1}, ${s.scoreTeam2})`
+      sql`INSERT INTO match_sets (match_id, set_number, score_team1, score_team2) VALUES (${s.matchId}, ${s.setNumber}, ${s.scoreTeam1}, ${s.scoreTeam2})`
     );
   }
 }
 
 export async function updateMatchSets(matchId: number, sets: Omit<InsertMatchSet, "id">[]) {
   const db = getDb();
-  await db.execute(sql`DELETE FROM match_sets WHERE matchId = ${matchId}`);
+  await db.execute(sql`DELETE FROM match_sets WHERE match_id = ${matchId}`);
   for (const s of sets) {
     await db.execute(
-      sql`INSERT INTO match_sets (matchId, setNumber, score_team1, score_team2) VALUES (${s.matchId}, ${s.setNumber}, ${s.scoreTeam1}, ${s.scoreTeam2})`
+      sql`INSERT INTO match_sets (match_id, set_number, score_team1, score_team2) VALUES (${s.matchId}, ${s.setNumber}, ${s.scoreTeam1}, ${s.scoreTeam2})`
     );
   }
 }
