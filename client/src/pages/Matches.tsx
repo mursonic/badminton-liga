@@ -20,8 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { ListOrdered, Pencil, PlusCircle, Trash2, Trophy, X } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, ListOrdered, Minus, Plus, PlusCircle, Trash2, Trophy, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
@@ -38,6 +38,42 @@ const matchTypeBadge: Record<string, string> = {
 };
 
 interface SetScore { scoreTeam1: number; scoreTeam2: number; }
+
+// ─── Badminton-Validierung ────────────────────────────────────────────────────
+function validateBadmintonSet(s1: number, s2: number): string | null {
+  if (s1 === s2) return "Unentschieden nicht möglich.";
+  const winner = Math.max(s1, s2);
+  const loser = Math.min(s1, s2);
+  if (winner < 21) return `Sieger braucht mind. 21 Punkte (aktuell: ${winner}).`;
+  if (winner > 30) return `Maximum ist 30 Punkte (aktuell: ${winner}).`;
+  if (loser > 29) return `Verlierer max. 29 Punkte (aktuell: ${loser}).`;
+  if (winner === 21 && loser >= 20) return `Bei 21:${loser} fehlt der 2-Punkte-Vorsprung (z.B. 22:20).`;
+  if (winner >= 22 && winner <= 29 && winner - loser !== 2) return `Vorsprung muss genau 2 Punkte betragen.`;
+  if (winner === 30 && loser !== 29) return `Bei 30 Punkten muss der Verlierer 29 haben.`;
+  return null;
+}
+
+function validateSets(sets: SetScore[], winningSide: number): string | null {
+  if (sets.length === 0) return "Mindestens ein Satz erforderlich.";
+  if (sets.length > 3) return "Maximal 3 Sätze möglich.";
+  for (let i = 0; i < sets.length; i++) {
+    const err = validateBadmintonSet(sets[i].scoreTeam1, sets[i].scoreTeam2);
+    if (err) return `Satz ${i + 1}: ${err}`;
+  }
+  const t1Sets = sets.filter(s => s.scoreTeam1 > s.scoreTeam2).length;
+  const t2Sets = sets.filter(s => s.scoreTeam2 > s.scoreTeam1).length;
+  if (sets.length === 1) {
+    const sw = sets[0].scoreTeam1 > sets[0].scoreTeam2 ? 1 : 2;
+    if (sw !== winningSide) return "Gewinner hat den Satz nicht gewonnen.";
+  } else if (sets.length === 2) {
+    if (t1Sets !== 2 && t2Sets !== 2) return "Bei 2 Sätzen muss ein Team beide gewonnen haben (2:0).";
+    if ((t1Sets === 2 ? 1 : 2) !== winningSide) return "Gewinner hat nicht beide Sätze gewonnen.";
+  } else {
+    if (t1Sets !== 2 && t2Sets !== 2) return "Bei 3 Sätzen muss ein Team 2 Sätze gewonnen haben (2:1).";
+    if ((t1Sets === 2 ? 1 : 2) !== winningSide) return "Gewinner hat nicht 2 von 3 Sätzen gewonnen.";
+  }
+  return null;
+}
 
 export default function Matches() {
   const [, setLocation] = useLocation();
@@ -57,7 +93,7 @@ export default function Matches() {
   // Edit dialog state
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editWinningSide, setEditWinningSide] = useState<number>(1);
-  const [editSets, setEditSets] = useState<SetScore[]>([{ scoreTeam1: 0, scoreTeam2: 0 }]);
+  const [editSets, setEditSets] = useState<SetScore[]>([{ scoreTeam1: 21, scoreTeam2: 0 }]);
   const [editTeam1Label, setEditTeam1Label] = useState("");
   const [editTeam2Label, setEditTeam2Label] = useState("");
 
@@ -96,6 +132,13 @@ export default function Matches() {
     { enabled: editingId !== null }
   );
 
+  // Sync sets from matchDetail when loaded
+  useEffect(() => {
+    if (matchDetail?.id === editingId && matchDetail.sets?.length > 0) {
+      setEditSets(matchDetail.sets.map(s => ({ scoreTeam1: s.scoreTeam1, scoreTeam2: s.scoreTeam2 })));
+    }
+  }, [matchDetail?.id, editingId]);
+
   const playerMap = new Map((players ?? []).map(p => [p.id, p]));
 
   const filteredMatches = (allMatches ?? []).filter(m =>
@@ -109,7 +152,8 @@ export default function Matches() {
     return `${p1} & ${p2}`;
   };
 
-  const formatDate = (d: number | Date | null | undefined) => d ? new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+  const formatDate = (d: number | Date | null | undefined) =>
+    d ? new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
 
   const handleDelete = (id: number) => {
     if (confirm("Spiel wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")) {
@@ -122,36 +166,32 @@ export default function Matches() {
     setEditWinningSide(m.winningSide);
     setEditTeam1Label(getTeamLabel(m.player1Id, m.player2Id));
     setEditTeam2Label(getTeamLabel(m.player3Id, m.player4Id));
-    // Sets werden über matchDetail geladen
-    setEditSets([{ scoreTeam1: 0, scoreTeam2: 0 }]);
+    setEditSets([{ scoreTeam1: 21, scoreTeam2: 0 }]); // Placeholder bis matchDetail geladen
   };
-
-  // Sobald matchDetail geladen ist, Sätze übernehmen
-  const currentSets = matchDetail?.id === editingId && matchDetail.sets?.length > 0
-    ? matchDetail.sets.map(s => ({ scoreTeam1: s.scoreTeam1, scoreTeam2: s.scoreTeam2 }))
-    : editSets;
 
   const handleSaveEdit = () => {
     if (!editingId) return;
-    const setsToSave = matchDetail?.id === editingId ? currentSets : editSets;
-    updateMutation.mutate({
-      id: editingId,
-      winningSide: editWinningSide,
-      sets: setsToSave,
-    });
+    const validationError = validateSets(editSets, editWinningSide);
+    if (validationError) { toast.error(validationError); return; }
+    updateMutation.mutate({ id: editingId, winningSide: editWinningSide, sets: editSets });
   };
 
   const updateSet = (idx: number, field: keyof SetScore, value: number) => {
-    const updated = currentSets.map((s, i) => i === idx ? { ...s, [field]: value } : s);
-    setEditSets(updated);
-    // Patch matchDetail cache locally
+    setEditSets(prev => prev.map((s, i) => i === idx ? { ...s, [field]: Math.max(0, Math.min(30, value)) } : s));
   };
 
-  const addSet = () => setEditSets([...currentSets, { scoreTeam1: 0, scoreTeam2: 0 }]);
-  const removeSet = (idx: number) => {
-    if (currentSets.length <= 1) return;
-    setEditSets(currentSets.filter((_, i) => i !== idx));
+  const addEditSet = () => {
+    if (editSets.length >= 3) { toast.error("Maximal 3 Sätze möglich."); return; }
+    setEditSets(prev => [...prev, { scoreTeam1: 21, scoreTeam2: 0 }]);
   };
+  const removeEditSet = (idx: number) => {
+    if (editSets.length <= 1) return;
+    setEditSets(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // Live-Validierung
+  const setErrors = editSets.map(s => validateBadmintonSet(s.scoreTeam1, s.scoreTeam2));
+  const overallError = validateSets(editSets, editWinningSide);
 
   return (
     <DashboardLayout>
@@ -250,11 +290,11 @@ export default function Matches() {
                         <div className="flex gap-1 shrink-0">
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                            size="sm"
+                            className="h-8 px-2 text-muted-foreground hover:text-foreground gap-1.5 text-xs"
                             onClick={() => openEdit(m)}
                           >
-                            <Pencil className="h-3.5 w-3.5" />
+                            Bearbeiten
                           </Button>
                           <Button
                             variant="ghost"
@@ -293,7 +333,7 @@ export default function Matches() {
                 <button
                   type="button"
                   onClick={() => setEditWinningSide(1)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors text-left ${
+                  className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors text-left ${
                     editWinningSide === 1
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border/50 text-muted-foreground hover:border-border"
@@ -305,7 +345,7 @@ export default function Matches() {
                 <button
                   type="button"
                   onClick={() => setEditWinningSide(2)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors text-left ${
+                  className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors text-left ${
                     editWinningSide === 2
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border/50 text-muted-foreground hover:border-border"
@@ -321,47 +361,118 @@ export default function Matches() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Sätze</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addSet} className="h-7 text-xs gap-1">
-                  <PlusCircle className="h-3 w-3" /> Satz hinzufügen
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addEditSet}
+                  disabled={editSets.length >= 3}
+                  className="h-7 text-xs gap-1 border-dashed"
+                >
+                  <Plus className="h-3 w-3" /> Satz hinzufügen
                 </Button>
               </div>
+
+              {/* Spaltenheader */}
+              <div className="grid grid-cols-[3rem_1fr_auto_1fr_2rem] gap-2 items-center text-xs text-muted-foreground px-1">
+                <span></span>
+                <span className="truncate text-center">{editTeam1Label || "Team 1"}</span>
+                <span className="w-4 text-center"></span>
+                <span className="truncate text-center">{editTeam2Label || "Team 2"}</span>
+                <span></span>
+              </div>
+
               <div className="space-y-2">
-                {currentSets.map((s, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-12 shrink-0">Satz {idx + 1}</span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={s.scoreTeam1}
-                      onChange={e => updateSet(idx, "scoreTeam1", parseInt(e.target.value) || 0)}
-                      className="w-16 text-center bg-input border-border/50 h-8"
-                    />
-                    <span className="text-muted-foreground font-bold text-sm">:</span>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={s.scoreTeam2}
-                      onChange={e => updateSet(idx, "scoreTeam2", parseInt(e.target.value) || 0)}
-                      className="w-16 text-center bg-input border-border/50 h-8"
-                    />
-                    <span className="text-xs text-muted-foreground flex-1 truncate">
-                      {editTeam1Label} : {editTeam2Label}
-                    </span>
-                    {currentSets.length > 1 && (
-                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => removeSet(idx)}>
-                        <X className="h-3.5 w-3.5" />
-                      </Button>
+                {editSets.map((s, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="grid grid-cols-[3rem_1fr_auto_1fr_2rem] gap-2 items-center">
+                      <span className="text-xs text-muted-foreground text-center">Satz {idx + 1}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => updateSet(idx, "scoreTeam1", s.scoreTeam1 - 1)}
+                          className="w-6 h-6 rounded flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        >
+                          <Minus className="h-2.5 w-2.5" />
+                        </button>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={30}
+                          value={s.scoreTeam1}
+                          onChange={e => updateSet(idx, "scoreTeam1", parseInt(e.target.value) || 0)}
+                          className="text-center bg-input border-border/50 h-8 font-semibold"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateSet(idx, "scoreTeam1", s.scoreTeam1 + 1)}
+                          className="w-6 h-6 rounded flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        >
+                          <Plus className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                      <span className="text-muted-foreground font-bold text-sm text-center w-4">:</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => updateSet(idx, "scoreTeam2", s.scoreTeam2 - 1)}
+                          className="w-6 h-6 rounded flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        >
+                          <Minus className="h-2.5 w-2.5" />
+                        </button>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={30}
+                          value={s.scoreTeam2}
+                          onChange={e => updateSet(idx, "scoreTeam2", parseInt(e.target.value) || 0)}
+                          className="text-center bg-input border-border/50 h-8 font-semibold"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateSet(idx, "scoreTeam2", s.scoreTeam2 + 1)}
+                          className="w-6 h-6 rounded flex items-center justify-center bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                        >
+                          <Plus className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                      {editSets.length > 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => removeEditSet(idx)}
+                          className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      ) : <span />}
+                    </div>
+                    {setErrors[idx] && (
+                      <div className="flex items-center gap-1.5 text-xs text-amber-500 pl-14">
+                        <AlertCircle className="h-3 w-3 shrink-0" />
+                        <span>{setErrors[idx]}</span>
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Gesamt-Validierungsfehler */}
+            {overallError && !setErrors.some(Boolean) && (
+              <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-2.5 text-xs text-destructive">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>{overallError}</span>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingId(null)}>Abbrechen</Button>
-            <Button onClick={handleSaveEdit} disabled={updateMutation.isPending}>
-              Speichern
+            <Button
+              onClick={handleSaveEdit}
+              disabled={updateMutation.isPending || !!overallError}
+            >
+              {updateMutation.isPending ? "Speichern…" : "Speichern"}
             </Button>
           </DialogFooter>
         </DialogContent>

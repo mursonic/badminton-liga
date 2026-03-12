@@ -14,6 +14,8 @@ import { ArrowLeft, CheckCircle2, Trophy, Users2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useParams } from "wouter";
 
+type TabType = "singles" | "doubles";
+
 export default function PlayerDetail() {
   const params = useParams<{ id: string }>();
   const playerId = parseInt(params.id ?? "0");
@@ -21,9 +23,10 @@ export default function PlayerDetail() {
 
   const { data: players } = trpc.players.list.useQuery();
   const { data: seasons } = trpc.seasons.list.useQuery();
-  const { data: activeSeason } = trpc.seasons.active.useQuery();
 
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<TabType>("singles");
+
   const seasonId = selectedSeasonId === "all" ? null : parseInt(selectedSeasonId);
 
   const { data: playerMatches, isLoading } = trpc.playerDetail.getMatches.useQuery(
@@ -49,22 +52,26 @@ export default function PlayerDetail() {
     );
   }
 
-  // Compute stats from matches
-  const wins = playerMatches?.filter(m => m.winningSide === m.playerSide).length ?? 0;
-  const losses = playerMatches?.filter(m => m.winningSide !== m.playerSide).length ?? 0;
-  const gamesPlayed = playerMatches?.length ?? 0;
-  const points = wins * 3 + losses * 1;
+  // ─── Statistiken ─────────────────────────────────────────────────────────────
+  const singlesMatches = playerMatches?.filter(m => m.type === "singles") ?? [];
+  const doublesMatches = playerMatches?.filter(m => m.type !== "singles") ?? [];
 
-  const pf = playerMatches?.reduce((a, m) => a + (m.playerSide === 1 ? m.scoreTeam1 : m.scoreTeam2), 0) ?? 0;
-  const pa = playerMatches?.reduce((a, m) => a + (m.playerSide === 1 ? m.scoreTeam2 : m.scoreTeam1), 0) ?? 0;
-  const ratio = pa === 0 ? (pf > 0 ? "∞" : "0.00") : (pf / pa).toFixed(2);
+  const computeStats = (ms: typeof singlesMatches) => {
+    const wins = ms.filter(m => m.winningSide === m.playerSide).length;
+    const losses = ms.length - wins;
+    const pf = ms.reduce((a, m) => a + (m.playerSide === 1 ? m.scoreTeam1 : m.scoreTeam2), 0);
+    const pa = ms.reduce((a, m) => a + (m.playerSide === 1 ? m.scoreTeam2 : m.scoreTeam1), 0);
+    const ratio = pa === 0 ? (pf > 0 ? "∞" : "0.00") : (pf / pa).toFixed(2);
+    return { wins, losses, gamesPlayed: ms.length, points: wins * 3 + losses, pf, pa, ratio };
+  };
 
-  // Rank from ranking
+  const singleStats = computeStats(singlesMatches);
+  const doubleStats = computeStats(doublesMatches);
+
   const rankRow = ranking?.findIndex(r => r.playerId === playerId);
   const rank = rankRow !== undefined && rankRow >= 0 ? rankRow + 1 : null;
 
-  // Head-to-head opponents (singles only)
-  const singlesMatches = playerMatches?.filter(m => m.type === "singles") ?? [];
+  // ─── Head-to-Head (Einzel) ────────────────────────────────────────────────────
   const h2hMap = new Map<number, { wins: number; losses: number; name: string }>();
   for (const m of singlesMatches) {
     const oppId = m.opponent1Id;
@@ -78,8 +85,27 @@ export default function PlayerDetail() {
     .map(([id, v]) => ({ id, ...v }))
     .sort((a, b) => (b.wins + b.losses) - (a.wins + a.losses));
 
+  // ─── Partner-Bilanz (Doppel/Mixed) ───────────────────────────────────────────
+  const partnerMap = new Map<number, { wins: number; losses: number; name: string; types: Set<string> }>();
+  for (const m of doublesMatches) {
+    const partnerId = m.partner1Id;
+    if (!partnerId) continue;
+    const partnerName = playerMap.get(partnerId)?.name ?? `#${partnerId}`;
+    if (!partnerMap.has(partnerId)) partnerMap.set(partnerId, { wins: 0, losses: 0, name: partnerName, types: new Set() });
+    const entry = partnerMap.get(partnerId)!;
+    entry.types.add(m.type);
+    if (m.winningSide === m.playerSide) entry.wins++;
+    else entry.losses++;
+  }
+  const partners = Array.from(partnerMap.entries())
+    .map(([id, v]) => ({ id, ...v }))
+    .sort((a, b) => (b.wins + b.losses) - (a.wins + a.losses));
+
   const typeLabel: Record<string, string> = { singles: "Einzel", doubles: "Doppel", mixed: "Mixed" };
   const genderLabel: Record<string, string> = { male: "Herren", female: "Damen", other: "Divers" };
+
+  const currentStats = activeTab === "singles" ? singleStats : doubleStats;
+  const currentMatches = activeTab === "singles" ? singlesMatches : doublesMatches;
 
   return (
     <DashboardLayout>
@@ -104,7 +130,7 @@ export default function PlayerDetail() {
               )}
               {rank && (
                 <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                  Platz {rank}
+                  Einzel-Platz {rank}
                 </Badge>
               )}
             </div>
@@ -124,13 +150,31 @@ export default function PlayerDetail() {
           </Select>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-1 bg-muted/30 rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setActiveTab("singles")}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === "singles" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Einzel
+            <span className="ml-1.5 text-xs opacity-60">({singleStats.gamesPlayed})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("doubles")}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === "doubles" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Doppel/Mixed
+            <span className="ml-1.5 text-xs opacity-60">({doubleStats.gamesPlayed})</span>
+          </button>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Spiele", value: gamesPlayed, icon: <Trophy className="h-4 w-4" /> },
-            { label: "Siege", value: wins, icon: <CheckCircle2 className="h-4 w-4 text-green-500" /> },
-            { label: "Niederlagen", value: losses, icon: <XCircle className="h-4 w-4 text-destructive" /> },
-            { label: "Punkte", value: points, icon: <Trophy className="h-4 w-4 text-primary" /> },
+            { label: "Spiele", value: currentStats.gamesPlayed, icon: <Trophy className="h-4 w-4" /> },
+            { label: "Siege", value: currentStats.wins, icon: <CheckCircle2 className="h-4 w-4 text-green-500" /> },
+            { label: "Niederlagen", value: currentStats.losses, icon: <XCircle className="h-4 w-4 text-destructive" /> },
+            { label: "Punkte", value: currentStats.points, icon: <Trophy className="h-4 w-4 text-primary" /> },
           ].map(stat => (
             <Card key={stat.label} className="bg-card border-border/50">
               <CardContent className="pt-4 pb-3 text-center">
@@ -143,50 +187,91 @@ export default function PlayerDetail() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
-          {/* Head-to-Head */}
-          <Card className="bg-card border-border/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Users2 className="h-4 w-4 text-primary" />
-                Head-to-Head (Einzel)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {h2h.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Noch keine Einzelspiele.</p>
-              ) : (
-                <div className="divide-y divide-border/20">
-                  {h2h.map(entry => (
-                    <div key={entry.id} className="flex items-center justify-between py-2.5">
-                      <button
-                        className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors text-left"
-                        onClick={() => setLocation(`/players/${entry.id}`)}
-                      >
-                        {entry.name}
-                      </button>
-                      <div className="flex items-center gap-1.5 text-sm shrink-0">
-                        <span className="text-green-500 font-semibold">{entry.wins}S</span>
-                        <span className="text-muted-foreground">/</span>
-                        <span className="text-destructive font-semibold">{entry.losses}N</span>
+          {/* Head-to-Head / Partner-Bilanz */}
+          {activeTab === "singles" ? (
+            <Card className="bg-card border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Users2 className="h-4 w-4 text-primary" />
+                  Head-to-Head (Einzel)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {h2h.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">Noch keine Einzelspiele.</p>
+                ) : (
+                  <div className="divide-y divide-border/20">
+                    {h2h.map(entry => (
+                      <div key={entry.id} className="flex items-center justify-between py-2.5">
+                        <button
+                          className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors text-left"
+                          onClick={() => setLocation(`/players/${entry.id}`)}
+                        >
+                          {entry.name}
+                        </button>
+                        <div className="flex items-center gap-1.5 text-sm shrink-0">
+                          <span className="text-green-500 font-semibold">{entry.wins}S</span>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="text-destructive font-semibold">{entry.losses}N</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="bg-card border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Users2 className="h-4 w-4 text-primary" />
+                  Partner-Bilanz
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {partners.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">Noch keine Doppel-/Mixed-Spiele.</p>
+                ) : (
+                  <div className="divide-y divide-border/20">
+                    {partners.map(entry => (
+                      <div key={entry.id} className="flex items-center justify-between py-2.5">
+                        <div>
+                          <button
+                            className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors text-left"
+                            onClick={() => setLocation(`/players/${entry.id}`)}
+                          >
+                            {entry.name}
+                          </button>
+                          <div className="flex gap-1 mt-0.5">
+                            {Array.from(entry.types).map(t => (
+                              <span key={t} className="text-xs text-muted-foreground">{typeLabel[t]}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-sm shrink-0">
+                          <span className="text-green-500 font-semibold">{entry.wins}S</span>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="text-destructive font-semibold">{entry.losses}N</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Ratio & Summary */}
+          {/* Statistiken */}
           <Card className="bg-card border-border/50">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold">Statistiken</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {[
-                { label: "Punkte erzielt", value: pf },
-                { label: "Punkte kassiert", value: pa },
-                { label: "Ratio", value: ratio },
-                { label: "Siegquote", value: gamesPlayed > 0 ? `${Math.round((wins / gamesPlayed) * 100)} %` : "–" },
+                { label: "Punkte erzielt", value: currentStats.pf },
+                { label: "Punkte kassiert", value: currentStats.pa },
+                { label: "Ratio", value: currentStats.ratio },
+                { label: "Siegquote", value: currentStats.gamesPlayed > 0 ? `${Math.round((currentStats.wins / currentStats.gamesPlayed) * 100)} %` : "–" },
               ].map(row => (
                 <div key={row.label} className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">{row.label}</span>
@@ -202,17 +287,19 @@ export default function PlayerDetail() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Trophy className="h-4 w-4 text-primary" />
-              Spielhistorie ({gamesPlayed})
+              Spielhistorie ({currentStats.gamesPlayed})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <p className="text-center text-muted-foreground py-8">Lade Spiele…</p>
-            ) : playerMatches?.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Noch keine Spiele in dieser Saison.</p>
+            ) : currentMatches.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                Noch keine {activeTab === "singles" ? "Einzel-" : "Doppel-/Mixed-"}Spiele in dieser Auswahl.
+              </p>
             ) : (
               <div className="divide-y divide-border/20">
-                {playerMatches?.map(m => {
+                {currentMatches.map(m => {
                   const won = m.winningSide === m.playerSide;
                   const oppName = playerMap.get(m.opponent1Id)?.name ?? `#${m.opponent1Id}`;
                   const opp2Name = m.opponent2Id ? playerMap.get(m.opponent2Id)?.name : null;

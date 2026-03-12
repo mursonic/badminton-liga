@@ -93,3 +93,8 @@
 
 ## Neue Features (Runde 4)
 - [x] Dashboard Home: Top-3-Paarungen-Widget neben Top-Spieler-Liste
+
+## Neue Features (Runde 5)
+- [x] Spiel-Bearbeitungsfunktion: Spiele aus der Spielliste heraus bearbeiten (Ergebnis, Spieler, Modus)
+- [x] Spieler-Detailseite: Doppel- und Mixed-Spiele anzeigen (Tabs oder Abschnitte)
+- [x] Paarungsrangliste: Medaillen für die Top-3 wie auf der Einzelspieler-Seite
