@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { Trophy, Users, Swords, CalendarDays, PlusCircle, TrendingUp, Medal } from "lucide-react";
+import { Trophy, Users, Swords, CalendarDays, PlusCircle, TrendingUp, Medal, Users2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -14,12 +14,14 @@ export default function Home() {
   const { data: activeSeason } = trpc.seasons.active.useQuery();
   const { data: players } = trpc.players.listActive.useQuery();
   const { data: ranking } = trpc.rankings.players.useQuery({ seasonId: activeSeason?.id ?? null });
+  const { data: pairsRanking } = trpc.rankings.pairs.useQuery({ seasonId: activeSeason?.id ?? null });
   const { data: matches } = trpc.matches.listBySeason.useQuery(
     { seasonId: activeSeason?.id ?? 0 },
     { enabled: !!activeSeason?.id }
   );
 
   const top3 = ranking?.slice(0, 3) ?? [];
+  const top3Pairs = pairsRanking?.slice(0, 3) ?? [];
   const recentMatches = matches?.slice(0, 5) ?? [];
 
   const playerMap = new Map((players ?? []).map(p => [p.id, p]));
@@ -80,7 +82,7 @@ export default function Home() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Top 3 Ranking */}
+          {/* Top 3 Einzelspieler */}
           <Card className="bg-card border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -93,7 +95,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="space-y-3">
               {top3.length === 0 ? (
-                <p className="text-muted-foreground text-sm text-center py-4">Noch keine Spiele erfasst.</p>
+                <p className="text-muted-foreground text-sm text-center py-4">Noch keine Einzelspiele erfasst.</p>
               ) : (
                 top3.map((row, i) => {
                   const player = playerMap.get(row.playerId);
@@ -115,6 +117,46 @@ export default function Home() {
             </CardContent>
           </Card>
 
+          {/* Top 3 Paarungen */}
+          <Card className="bg-card border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <Users2 className="h-5 w-5 text-primary" />
+                Top Paarungen
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setLocation("/ranking/pairs")} className="text-muted-foreground text-xs">
+                Alle ansehen →
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {top3Pairs.length === 0 ? (
+                <p className="text-muted-foreground text-sm text-center py-4">Noch keine Doppel-/Mixed-Spiele erfasst.</p>
+              ) : (
+                top3Pairs.map((row, i) => {
+                  const p1 = playerMap.get(row.player1Id);
+                  const p2 = playerMap.get(row.player2Id);
+                  const pairName = `${p1?.name ?? `#${row.player1Id}`} & ${p2?.name ?? `#${row.player2Id}`}`;
+                  const typeLabel = row.matchType === "mixed" ? "Mixed" : "Doppel";
+                  return (
+                    <div key={`${row.player1Id}-${row.player2Id}-${row.matchType}`} className="flex items-center gap-3">
+                      <RankBadge rank={i + 1} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{pairName}</p>
+                        <p className="text-xs text-muted-foreground">{typeLabel} · {row.wins} Siege</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-primary">{row.points} Pkt</p>
+                        <p className="text-xs text-muted-foreground">{row.wins}S / {row.losses}N</p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
           {/* Recent Matches */}
           <Card className="bg-card border-border/50">
             <CardHeader className="flex flex-row items-center justify-between pb-3">

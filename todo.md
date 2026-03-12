@@ -90,3 +90,6 @@
 - [x] Backend: seasons.close / seasons.reopen Prozeduren
 - [x] Badminton-Validierung beim Spiel erfassen: gültige Satzergebnisse (21/30 Punkte, Einstand, Satzanzahl)
 - [x] Responsive Ranglisten-Tabellen: mobile Ansicht für Einzelrangliste und Paarungsrangliste
+
+## Neue Features (Runde 4)
+- [x] Dashboard Home: Top-3-Paarungen-Widget neben Top-Spieler-Liste
