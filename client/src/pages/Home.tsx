@@ -29,7 +29,7 @@ export default function Home() {
   const matchTypeLabel: Record<string, string> = {
     singles: "Einzel",
     doubles: "Doppel",
-    mixed: "Mixed",
+
   };
 
   return (
@@ -136,7 +136,7 @@ export default function Home() {
                   const p1 = playerMap.get(row.player1Id);
                   const p2 = playerMap.get(row.player2Id);
                   const pairName = `${p1?.name ?? `#${row.player1Id}`} & ${p2?.name ?? `#${row.player2Id}`}`;
-                  const typeLabel = row.matchType === "mixed" ? "Mixed" : "Doppel";
+                  const typeLabel = "Doppel";
                   return (
                     <div key={`${row.player1Id}-${row.player2Id}-${row.matchType}`} className="flex items-center gap-3">
                       <RankBadge rank={i + 1} />

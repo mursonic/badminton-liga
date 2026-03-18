@@ -17,7 +17,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
-type MatchType = "singles" | "doubles" | "mixed";
+type MatchType = "singles" | "doubles";
 
 interface SetScore {
   scoreTeam1: number;
@@ -145,7 +145,7 @@ export default function NewMatch() {
   const handleSubmit = () => {
     if (!activeSeason) { toast.error("Keine aktive Saison. Bitte zuerst eine Saison anlegen."); return; }
     if (!team1P1 || !team2P1) { toast.error("Bitte alle Spieler auswählen."); return; }
-    if (isDoubles && (!team1P2 || !team2P2)) { toast.error("Beim Doppel/Mixed müssen alle vier Spieler ausgewählt werden."); return; }
+    if (isDoubles && (!team1P2 || !team2P2)) { toast.error("Beim Doppel müssen alle vier Spieler ausgewählt werden."); return; }
 
     const selectedIds = [team1P1, isDoubles ? team1P2 : null, team2P1, isDoubles ? team2P2 : null].filter(Boolean);
     if (new Set(selectedIds).size !== selectedIds.length) { toast.error("Derselbe Spieler kann nicht zweimal ausgewählt werden."); return; }
@@ -203,9 +203,9 @@ export default function NewMatch() {
             <CardTitle className="text-base font-semibold">Spielmodus</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-2">
-              {(["singles", "doubles", "mixed"] as MatchType[]).map(type => {
-                const labels = { singles: "Einzel", doubles: "Doppel", mixed: "Mixed" };
+            <div className="grid grid-cols-2 gap-2">
+              {(["singles", "doubles"] as MatchType[]).map(type => {
+                const labels = { singles: "Einzel", doubles: "Doppel" };
                 return (
                   <button
                     key={type}

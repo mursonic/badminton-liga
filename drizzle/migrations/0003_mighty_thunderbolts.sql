@@ -1,0 +1,1 @@
+ALTER TABLE `matches` MODIFY COLUMN `type` enum('singles','doubles') NOT NULL;

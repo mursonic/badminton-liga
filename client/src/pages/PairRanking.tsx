@@ -20,7 +20,7 @@ export default function PairRanking() {
   const [matchTypeFilter, setMatchTypeFilter] = useState<string>("all");
 
   const seasonId = selectedSeasonId === "all" ? null : parseInt(selectedSeasonId);
-  const typeFilter = matchTypeFilter === "all" ? undefined : (matchTypeFilter as "doubles" | "mixed");
+  const typeFilter = matchTypeFilter === "all" ? undefined : (matchTypeFilter as "doubles");
 
   const { data: ranking, isLoading } = trpc.rankings.pairs.useQuery({ seasonId, matchType: typeFilter });
 
@@ -34,7 +34,7 @@ export default function PairRanking() {
     return `${p1} & ${p2}`;
   };
 
-  const typeLabel: Record<string, string> = { doubles: "Doppel", mixed: "Mixed" };
+  const typeLabel: Record<string, string> = { doubles: "Doppel" };
 
   return (
     <DashboardLayout>
@@ -54,7 +54,6 @@ export default function PairRanking() {
               <SelectContent>
                 <SelectItem value="all">Alle Modi</SelectItem>
                 <SelectItem value="doubles">Doppel</SelectItem>
-                <SelectItem value="mixed">Mixed</SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedSeasonId} onValueChange={setSelectedSeasonId}>
@@ -108,7 +107,7 @@ export default function PairRanking() {
                           </p>
                           <Badge
                             variant="outline"
-                            className={`mt-1.5 text-xs border-border/40 ${row.matchType === "mixed" ? "text-purple-400 border-purple-500/20" : "text-blue-400 border-blue-500/20"}`}
+                            className="mt-1.5 text-xs border-border/40 text-blue-400 border-blue-500/20"
                           >
                             {typeLabel[row.matchType]}
                           </Badge>
@@ -163,7 +162,7 @@ export default function PairRanking() {
                               {name}
                             </p>
                           </div>
-                          <Badge variant="outline" className={`w-16 justify-center text-xs border-border/50 ${row.matchType === "mixed" ? "text-purple-400 border-purple-500/20" : "text-blue-400 border-blue-500/20"}`}>
+                          <Badge variant="outline" className="w-16 justify-center text-xs border-border/50 text-blue-400 border-blue-500/20">
                             {typeLabel[row.matchType]}
                           </Badge>
                           <span className="text-center w-12 text-sm text-muted-foreground">{row.gamesPlayed}</span>
@@ -179,7 +178,7 @@ export default function PairRanking() {
                               {name}
                             </p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <Badge variant="outline" className={`text-xs px-1.5 py-0 h-4 border-border/40 ${row.matchType === "mixed" ? "text-purple-400 border-purple-500/20" : "text-blue-400 border-blue-500/20"}`}>
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 border-border/40 text-blue-400 border-blue-500/20">
                                 {typeLabel[row.matchType]}
                               </Badge>
                               <span className="text-xs text-muted-foreground">{row.gamesPlayed} Sp. · {ratio(row.pointsFor, row.pointsAgainst)}</span>

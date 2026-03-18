@@ -98,3 +98,6 @@
 - [x] Spiel-Bearbeitungsfunktion: Spiele aus der Spielliste heraus bearbeiten (Ergebnis, Spieler, Modus)
 - [x] Spieler-Detailseite: Doppel- und Mixed-Spiele anzeigen (Tabs oder Abschnitte)
 - [x] Paarungsrangliste: Medaillen für die Top-3 wie auf der Einzelspieler-Seite
+
+## Neue Features (Runde 6)
+- [x] Mixed-Kategorie entfernen: nur noch Einzel und Doppel (Schema, DB, Backend, alle Frontend-Seiten)

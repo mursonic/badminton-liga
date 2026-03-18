@@ -40,7 +40,7 @@ export type InsertSeason = typeof seasons.$inferInsert;
 export const matches = mysqlTable("matches", {
   id: int("id").autoincrement().primaryKey(),
   seasonId: int("season_id").notNull(),
-  type: mysqlEnum("type", ["singles", "doubles", "mixed"]).notNull(),
+  type: mysqlEnum("type", ["singles", "doubles"]).notNull(),
   player1Id: int("player1_id").notNull(),
   player2Id: int("player2_id"),
   player3Id: int("player3_id").notNull(),

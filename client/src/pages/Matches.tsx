@@ -28,13 +28,13 @@ import { useLocation } from "wouter";
 const matchTypeLabel: Record<string, string> = {
   singles: "Einzel",
   doubles: "Doppel",
-  mixed: "Mixed",
+
 };
 
 const matchTypeBadge: Record<string, string> = {
   singles: "text-blue-400 border-blue-500/20",
   doubles: "text-green-400 border-green-500/20",
-  mixed: "text-purple-400 border-purple-500/20",
+
 };
 
 interface SetScore { scoreTeam1: number; scoreTeam2: number; }
@@ -212,7 +212,7 @@ export default function Matches() {
                 <SelectItem value="all">Alle Modi</SelectItem>
                 <SelectItem value="singles">Einzel</SelectItem>
                 <SelectItem value="doubles">Doppel</SelectItem>
-                <SelectItem value="mixed">Mixed</SelectItem>
+
               </SelectContent>
             </Select>
             <Select value={selectedSeasonId} onValueChange={setSelectedSeasonId}>

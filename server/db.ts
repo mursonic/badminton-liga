@@ -338,7 +338,7 @@ export async function computePlayerRanking(seasonId: number | null): Promise<Pla
 export type PairRankRow = {
   player1Id: number;
   player2Id: number;
-  matchType: "doubles" | "mixed";
+  matchType: "doubles";
   points: number;
   wins: number;
   losses: number;
@@ -349,14 +349,14 @@ export type PairRankRow = {
 
 export async function computePairRanking(
   seasonId: number | null,
-  matchType?: "doubles" | "mixed"
+  matchType?: "doubles"
 ): Promise<PairRankRow[]> {
   const allMatches = seasonId
     ? await getMatchesBySeason(seasonId)
     : await getAllMatches();
 
   const pairMatches = allMatches.filter(m =>
-    (m.type === "doubles" || m.type === "mixed") &&
+    m.type === "doubles" &&
     (!matchType || m.type === matchType)
   );
   if (pairMatches.length === 0) return [];
@@ -372,7 +372,7 @@ export async function computePairRanking(
   const stats = new Map<string, PairRankRow>();
   const pairKey = (a: number, b: number, type: string) => `${Math.min(a, b)}_${Math.max(a, b)}_${type}`;
 
-  const ensure = (p1: number, p2: number, type: "doubles" | "mixed"): PairRankRow => {
+  const ensure = (p1: number, p2: number, type: "doubles"): PairRankRow => {
     const key = pairKey(p1, p2, type);
     if (!stats.has(key)) {
       stats.set(key, {
@@ -390,7 +390,7 @@ export async function computePairRanking(
     const sets = setsByMatch.get(m.id) ?? [];
     const pf1 = sets.reduce((a, s) => a + s.scoreTeam1, 0);
     const pa1 = sets.reduce((a, s) => a + s.scoreTeam2, 0);
-    const type = m.type as "doubles" | "mixed";
+    const type = m.type as "doubles";
 
     const t1 = ensure(m.player1Id, m.player2Id, type);
     const t2 = ensure(m.player3Id, m.player4Id, type);

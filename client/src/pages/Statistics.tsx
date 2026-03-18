@@ -18,7 +18,6 @@ export default function Statistics() {
   const totalMatches = allMatches?.length ?? 0;
   const singlesCount = allMatches?.filter(m => m.type === "singles").length ?? 0;
   const doublesCount = allMatches?.filter(m => m.type === "doubles").length ?? 0;
-  const mixedCount = allMatches?.filter(m => m.type === "mixed").length ?? 0;
 
   // Most active player (most games played)
   const mostActive = overallStats?.slice().sort((a, b) => b.gamesPlayed - a.gamesPlayed)[0];
@@ -49,7 +48,6 @@ export default function Statistics() {
           <StatCard icon={<Swords className="h-5 w-5 text-primary" />} label="Spiele gesamt" value={totalMatches} />
           <StatCard icon={<BarChart3 className="h-5 w-5 text-blue-400" />} label="Einzel" value={singlesCount} />
           <StatCard icon={<Users2 className="h-5 w-5 text-green-400" />} label="Doppel" value={doublesCount} />
-          <StatCard icon={<Users2 className="h-5 w-5 text-purple-400" />} label="Mixed" value={mixedCount} />
         </div>
 
         {/* Highlights */}
@@ -154,8 +152,8 @@ export default function Statistics() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className="font-medium text-foreground truncate text-sm">{pairName(row.player1Id, row.player2Id)}</p>
-                            <Badge variant="outline" className={`text-xs shrink-0 ${row.matchType === "mixed" ? "text-purple-400 border-purple-500/20" : "text-green-400 border-green-500/20"}`}>
-                              {row.matchType === "mixed" ? "Mixed" : "Doppel"}
+                            <Badge variant="outline" className="text-xs shrink-0 text-green-400 border-green-500/20">
+                              Doppel
                             </Badge>
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">

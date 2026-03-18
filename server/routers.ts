@@ -205,7 +205,7 @@ export const appRouter = router({
       .input(
         z.object({
           seasonId: z.number(),
-          type: z.enum(["singles", "doubles", "mixed"]),
+          type: z.enum(["singles", "doubles"]),
           player1Id: z.number(),
           player2Id: z.number().optional().nullable(),
           player3Id: z.number(),
@@ -250,7 +250,7 @@ export const appRouter = router({
       .query(({ input }) => computePlayerRanking(input.seasonId)),
 
     pairs: publicProcedure
-      .input(z.object({ seasonId: z.number().nullable(), matchType: z.enum(["doubles", "mixed"]).optional() }))
+      .input(z.object({ seasonId: z.number().nullable(), matchType: z.enum(["doubles"]).optional() }))
       .query(({ input }) => computePairRanking(input.seasonId, input.matchType)),
   }),
 

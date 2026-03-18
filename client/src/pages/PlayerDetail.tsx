@@ -101,7 +101,7 @@ export default function PlayerDetail() {
     .map(([id, v]) => ({ id, ...v }))
     .sort((a, b) => (b.wins + b.losses) - (a.wins + a.losses));
 
-  const typeLabel: Record<string, string> = { singles: "Einzel", doubles: "Doppel", mixed: "Mixed" };
+  const typeLabel: Record<string, string> = { singles: "Einzel", doubles: "Doppel" };
   const genderLabel: Record<string, string> = { male: "Herren", female: "Damen", other: "Divers" };
 
   const currentStats = activeTab === "singles" ? singleStats : doubleStats;
@@ -163,7 +163,7 @@ export default function PlayerDetail() {
             onClick={() => setActiveTab("doubles")}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === "doubles" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
-            Doppel/Mixed
+            Doppel
             <span className="ml-1.5 text-xs opacity-60">({doubleStats.gamesPlayed})</span>
           </button>
         </div>
